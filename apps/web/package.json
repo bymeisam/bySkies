@@ -1,5 +1,5 @@
 {
-  "name": "byskies",
+  "name": "web",
   "version": "0.1.0",
   "private": true,
   "description": "Your plans, guided by skies. A weather app with smart activity suggestions.",
@@ -14,7 +14,9 @@
     "next": "15.4.6",
     "node-fetch": "^3.3.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "@byskies/types": "workspace:*",
+    "@byskies/utils": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

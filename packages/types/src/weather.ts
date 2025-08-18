@@ -1,4 +1,4 @@
-export interface OpenWeatherMapData {
+export interface WeatherData {
   coord: {
     lon: number;
     lat: number;
@@ -17,11 +17,14 @@ export interface OpenWeatherMapData {
     temp_max: number;
     pressure: number;
     humidity: number;
+    sea_level?: number;
+    grnd_level?: number;
   };
   visibility: number;
   wind: {
     speed: number;
     deg: number;
+    gust?: number;
   };
   clouds: {
     all: number;
@@ -41,6 +44,9 @@ export interface OpenWeatherMapData {
 }
 
 export interface ForecastData {
+  cod: string;
+  message: number;
+  cnt: number;
   list: {
     dt: number;
     main: {
@@ -88,9 +94,4 @@ export interface ForecastData {
     sunrise: number;
     sunset: number;
   };
-}
-
-export interface ActivitySuggestion {
-  name: string;
-  description: string;
 }
