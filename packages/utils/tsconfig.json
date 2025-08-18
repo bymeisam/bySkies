@@ -1,0 +1,7 @@
+{
+  "extends": "@byskies/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "lib": ["esnext"]
+  }
+}
