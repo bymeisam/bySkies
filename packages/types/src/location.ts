@@ -15,8 +15,3 @@ export interface GeocodingResult {
 
 export type GeocodingResponse = GeocodingResult[];
 
-export interface LocationObject {
-  lat: number;
-  lon: number;
-  name: string;
-}

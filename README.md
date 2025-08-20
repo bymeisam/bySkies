@@ -1,58 +1,218 @@
-# Turborepo Tailwind CSS starter
+# BySkies - Your plans, guided by skies ☀️🌧️
 
-This Turborepo starter is maintained by the Turborepo core team.
+> **A premium weather application with intelligent activity suggestions**
 
-## Using this example
+BySkies transforms weather data into actionable insights, helping you make perfect plans based on sky conditions. More than just a weather app – it's your personal meteorological planning assistant.
 
-Run the following command:
+![BySkies App](https://via.placeholder.com/800x400/0891b2/ffffff?text=BySkies+-+Premium+Weather+App)
 
-```sh
-npx create-turbo@latest -e with-tailwind
+## ✨ Features
+
+### 🌤️ **Smart Weather Intelligence**
+- Real-time weather conditions with beautiful visualizations
+- 5-day detailed forecasts with trend analysis
+- Air quality monitoring with health recommendations
+- Severe weather alerts and planning disruptions
+
+### 🎯 **Intelligent Activity Suggestions**
+- AI-powered recommendations based on weather conditions
+- Confidence scoring for activity suitability  
+- Time-based planning with optimal activity windows
+- Personalized suggestions for outdoor activities
+
+### 🎨 **Premium Design**
+- Stunning glassmorphism UI with smooth animations
+- Sky-themed design system with beautiful gradients
+- Responsive design that works on all devices
+- Dark/light mode support with system preference detection
+
+### 🚀 **Modern Technology Stack**
+- **Next.js 15** - Latest React framework with Turbopack
+- **TypeScript** - Full type safety throughout
+- **Zustand** - Lightweight state management
+- **React Query** - Smart data fetching and caching
+- **Framer Motion** - Delightful animations
+- **Tailwind CSS** - Utility-first styling
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- Yarn 1.22+
+- OpenWeatherMap API key (free at [openweathermap.org](https://openweathermap.org/api))
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd bySkies
+   ```
+
+2. **Install dependencies**
+   ```bash
+   yarn install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example apps/web/.env.local
+   # Edit apps/web/.env.local and add your OpenWeatherMap API key
+   ```
+
+4. **Start the development server**
+   ```bash
+   yarn dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3001](http://localhost:3001)
+
+## 🏗️ Project Architecture
+
+This is a **Turborepo monorepo** with the following structure:
+
+```
+bySkies/
+├── apps/
+│   └── web/                 # Next.js application
+│       ├── app/             # App router pages
+│       ├── components/      # React components
+│       ├── lib/             # Utilities and services
+│       └── public/          # Static assets
+├── packages/
+│   ├── ui/                  # Shared UI components
+│   ├── types/               # TypeScript type definitions
+│   ├── eslint-config/       # ESLint configurations
+│   ├── typescript-config/   # TypeScript configurations
+│   └── tailwind-config/     # Tailwind CSS config
+└── turbo.json              # Turborepo configuration
 ```
 
-## What's inside?
+### Key Features Implementation
 
-This Turborepo includes the following packages/apps:
+- **State Management**: Zustand store with type-safe selectors
+- **API Integration**: React Query for smart caching and background updates
+- **Weather API**: Complete OpenWeatherMap API integration
+- **Activity Engine**: Intelligent suggestion algorithm with confidence scoring
+- **Location Services**: Geolocation API with search functionality
+- **Error Handling**: Comprehensive error boundaries and loading states
 
-### Apps and Packages
+## 🎨 Design System
 
-- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `ui`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+BySkies features a custom design system inspired by sky and weather:
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- **Colors**: Sky-inspired gradients (blue, indigo, purple, amber)
+- **Glassmorphism**: Translucent components with backdrop blur
+- **Animations**: Smooth transitions and micro-interactions
+- **Typography**: Clean, readable fonts with perfect spacing
+- **Icons**: Weather-specific icons with state indicators
 
-### Building packages/ui
+## 🌐 API Integration
 
-This example is set up to produce compiled styles for `ui` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
+### Weather Data Sources
+- **Current Weather**: Real-time conditions and measurements  
+- **5-Day Forecast**: Detailed hourly and daily predictions
+- **Air Quality**: AQI levels with health recommendations
+- **Geocoding**: Location search and reverse geocoding
 
-- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
-- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
-- Ensure Tailwind classes do not overwrite each other. The `ui` package uses a `ui-` prefix for it's classes.
-- Maintain clear package export boundaries.
+### Data Flow
+1. User selects location (search or GPS)
+2. Weather APIs called in parallel via React Query
+3. Data processed through intelligent suggestion engine
+4. UI updates with smooth animations and loading states
 
-Another option is to consume `packages/ui` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
+## 🧠 Activity Suggestion Engine
 
-For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
+The intelligent activity engine analyzes multiple factors:
 
-```js
-  content: [
-    // app content
-    `src/**/*.{js,ts,jsx,tsx}`,
-    // include packages if not transpiling
-    "../../packages/ui/*.{js,ts,jsx,tsx}",
-  ],
+- **Weather Conditions**: Temperature, wind, precipitation, clouds
+- **Air Quality**: AQI levels and pollutant concentrations  
+- **Time Analysis**: Daylight hours and activity timing
+- **Trend Detection**: Weather pattern changes and disruptions
+- **Confidence Scoring**: Algorithm certainty for each recommendation
+
+### Supported Activities
+- 🏃‍♂️ Running & Jogging
+- 🚴‍♂️ Cycling & Biking  
+- 🍽️ Outdoor Dining
+- 📸 Photography
+- 🧺 Picnics
+- 🥾 Hiking & Walking
+
+## 📱 Development
+
+### Available Scripts
+
+```bash
+# Development
+yarn dev              # Start development server
+yarn build            # Build for production
+yarn start           # Start production server
+
+# Code Quality
+yarn lint            # Run ESLint
+yarn check-types     # TypeScript type checking
+yarn format          # Format code with Prettier
+
+# Workspace Commands
+yarn build           # Build all packages
+yarn lint            # Lint all packages
+yarn check-types     # Type check all packages
 ```
 
-If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `ui` package.
+### Environment Variables
 
-### Utilities
+Create `.env.local` in the `apps/web` directory:
 
-This Turborepo has some additional tools already setup for you:
+```bash
+OPENWEATHER_API_KEY=your_api_key_here
+NODE_ENV=development
+```
 
-- [Tailwind CSS](https://tailwindcss.com/) for styles
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## 🚀 Deployment
+
+### Vercel (Recommended)
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+### Other Platforms
+BySkies works on any platform that supports Next.js:
+- Netlify
+- AWS Amplify  
+- Railway
+- Digital Ocean App Platform
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **OpenWeatherMap** for comprehensive weather data
+- **Turborepo** for excellent monorepo tooling
+- **Vercel** for hosting and deployment
+- **Tailwind CSS** for the utility-first CSS framework
+- **Framer Motion** for beautiful animations
+
+---
+
+**Built with ❤️ for better weather planning**
+
+*BySkies - Your plans, guided by skies*
