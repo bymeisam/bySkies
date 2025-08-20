@@ -2,9 +2,6 @@
   "name": "@repo/typescript-config",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-    "clean": "rm -rf node_modules dist"
-  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"
