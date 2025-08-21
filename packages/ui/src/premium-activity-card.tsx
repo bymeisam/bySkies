@@ -15,24 +15,26 @@ interface PremiumActivityCardProps {
   suggestions: ActivitySuggestion[];
   isLoading?: boolean;
   className?: string;
+  locationName?: string;
 }
 
 const getActivityIcon = (activity: string) => {
   const iconClass = "w-6 h-6 text-white";
+  const emojiClass = "text-2xl";
 
   switch (activity.toLowerCase()) {
     case "running":
-      return <div className={iconClass}>🏃‍♂️</div>;
+      return <span className={emojiClass}>🏃‍♂️</span>;
     case "outdoor dining":
-      return <div className={iconClass}>🍽️</div>;
+      return <span className={emojiClass}>🍽️</span>;
     case "photography":
-      return <div className={iconClass}>📸</div>;
+      return <span className={emojiClass}>📸</span>;
     case "cycling":
-      return <div className={iconClass}>🚴‍♂️</div>;
+      return <span className={emojiClass}>🚴‍♂️</span>;
     case "picnic":
-      return <div className={iconClass}>🧺</div>;
+      return <span className={emojiClass}>🧺</span>;
     case "hiking":
-      return <div className={iconClass}>🥾</div>;
+      return <span className={emojiClass}>🥾</span>;
     default:
       return <Activity className={iconClass} />;
   }
@@ -136,35 +138,25 @@ const SuggestionCard: React.FC<{
         ease: "easeOut",
       }}
       whileHover={{ scale: 1.02, y: -2 }}
-      className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300"
-      style={{
-        boxShadow: `
-          0 10px 25px -5px rgba(59, 130, 246, 0.1),
-          0 0 0 1px rgba(255, 255, 255, 0.05),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1)
-        `,
-      }}
+      className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:bg-white/10"
     >
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-sky-400/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-      <div className="relative z-10 space-y-4">
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
-              className="p-3 bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-2xl border border-sky-400/30"
+              className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-2xl border border-sky-400/30 flex-shrink-0"
             >
               {getActivityIcon(suggestion.activity)}
             </motion.div>
 
-            <div className="space-y-1">
+            <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold text-lg leading-tight">
                 {suggestion.activity}
               </h3>
-              <div className="flex items-center gap-2 text-white/60 text-sm">
-                <Clock className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-white/60 text-sm mt-1">
+                <Clock className="w-4 h-4 flex-shrink-0" />
                 <span>{formatTime(suggestion.start)}</span>
                 {timeUntil && (
                   <>
@@ -178,7 +170,7 @@ const SuggestionCard: React.FC<{
 
           {/* Confidence indicator */}
           <div
-            className={`px-3 py-1 bg-gradient-to-r ${confidenceColors.bg} ${confidenceColors.text} text-xs font-medium rounded-full border ${confidenceColors.border} flex items-center gap-1`}
+            className={`px-3 py-1 bg-gradient-to-r ${confidenceColors.bg} ${confidenceColors.text} text-xs font-medium rounded-full border ${confidenceColors.border} flex items-center gap-1 flex-shrink-0`}
           >
             <Star className="w-3 h-3 fill-current" />
             {Math.round(suggestion.confidence * 100)}%
@@ -192,7 +184,7 @@ const SuggestionCard: React.FC<{
 
         {/* Reasons */}
         {suggestion.reasons && suggestion.reasons.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="text-white/60 text-xs uppercase tracking-wide font-medium">
               Perfect because:
             </div>
@@ -203,10 +195,10 @@ const SuggestionCard: React.FC<{
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2 + idx * 0.05 }}
-                  className="px-3 py-1 bg-white/10 text-white/70 text-xs rounded-lg border border-white/10 backdrop-blur-sm"
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-white/10 text-white/70 text-xs rounded-lg border border-white/10 backdrop-blur-sm"
                 >
-                  <CheckCircle className="w-3 h-3 text-emerald-400 inline mr-1" />
-                  {reason}
+                  <CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                  <span>{reason}</span>
                 </motion.span>
               ))}
             </div>
@@ -214,17 +206,12 @@ const SuggestionCard: React.FC<{
         )}
 
         {/* Time range */}
-        <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-          <Calendar className="w-4 h-4 text-white/50" />
+        <div className="flex items-center gap-2 pt-3 border-t border-white/10">
+          <Calendar className="w-4 h-4 text-white/50 flex-shrink-0" />
           <span className="text-white/60 text-sm">
             Good until {formatTime(suggestion.end)}
           </span>
         </div>
-      </div>
-
-      {/* Hover effect */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-sky-400/5 via-blue-500/5 to-indigo-600/5"></div>
       </div>
     </motion.div>
   );
@@ -286,38 +273,20 @@ export const PremiumActivityCard: React.FC<PremiumActivityCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`relative overflow-hidden backdrop-blur-xl border rounded-3xl p-8 shadow-2xl ${className}`}
-      style={{
-        background: `linear-gradient(135deg, 
-          rgba(255, 255, 255, 0.1) 0%, 
-          rgba(255, 255, 255, 0.05) 100%
-        )`,
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        boxShadow: `
-          0 25px 50px -12px rgba(59, 130, 246, 0.15),
-          0 0 0 1px rgba(255, 255, 255, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1)
-        `,
-      }}
+      className={`overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl ${className}`}
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-emerald-400/10 to-transparent rounded-full -mr-24 -mt-24"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-sky-400/10 to-transparent rounded-full -ml-20 -mb-20"></div>
-      </div>
-
-      <div className="relative z-10 space-y-8">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
             <motion.div
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="p-3 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 rounded-2xl border border-emerald-400/30"
+              className="p-3 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 rounded-2xl border border-emerald-400/30 flex-shrink-0"
             >
               <Zap className="w-6 h-6 text-emerald-300" />
             </motion.div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-2xl font-bold text-white">
                 Perfect Activities
               </h2>
@@ -328,13 +297,13 @@ export const PremiumActivityCard: React.FC<PremiumActivityCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2 text-white/60 text-sm">
-            <TrendingUp className="w-4 h-4 text-emerald-300" />
+            <TrendingUp className="w-4 h-4 text-emerald-300 flex-shrink-0" />
             <span>{topSuggestions.length} recommendations • Updated now</span>
           </div>
         </div>
 
         {/* Suggestions */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {topSuggestions.map((suggestion, index) => (
             <SuggestionCard
               key={`${suggestion.activity}-${suggestion.start}-${index}`}

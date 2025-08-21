@@ -91,7 +91,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     }, 300);
 
     return () => clearTimeout(searchTimeout);
-  }, [searchQuery, onSearchLocations]);
+  }, [searchQuery]); // Removed onSearchLocations from dependencies
 
   // Handle location selection
   const handleLocationSelect = (location: LocationOption) => {

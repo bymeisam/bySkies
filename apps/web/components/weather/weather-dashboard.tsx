@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
   PremiumWeatherCard,
   PremiumActivityCard,
+  PremiumForecastCard,
+  PremiumWeatherMap,
   LocationSelector,
 } from "@repo/ui";
 import {
@@ -17,12 +19,15 @@ import {
   useLocationSearch,
   useGeolocation,
 } from "@/lib/hooks/use-weather";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/query-client";
 import type { Location } from "@/lib/store/weather-store";
 
 const WeatherDashboard: React.FC = () => {
   const {
     currentLocation,
     currentWeather,
+    forecast,
     airQuality,
     suggestions,
     alerts,
@@ -33,10 +38,26 @@ const WeatherDashboard: React.FC = () => {
 
   // API hooks
   const weatherQuery = useCurrentWeather();
+  const forecastQuery = useForecast();
   const airQualityQuery = useAirQuality();
+  const suggestionsQuery = useActivitySuggestions();
 
   const locationSearch = useLocationSearch();
   const geolocation = useGeolocation();
+  const queryClient = useQueryClient();
+
+  // Debug logging
+  useEffect(() => {
+    console.log("🔧 Store State Debug:", {
+      currentLocation,
+      currentWeather,
+      airQuality,
+      suggestions,
+      hasAllData: hasAllData(),
+      canShowSuggestions: canShowSuggestions(),
+      isAnyLoading: isAnyLoading()
+    });
+  }, [currentLocation, currentWeather, airQuality, suggestions, hasAllData, canShowSuggestions, isAnyLoading]);
 
   // Auto-fetch location on mount if not set
   useEffect(() => {
@@ -52,12 +73,26 @@ const WeatherDashboard: React.FC = () => {
 
   // Handle location selection
   const handleLocationSelect = (location: Location) => {
+    console.log("🏙️ Location selected:", location.name);
+    
+    // Set new location first
     useWeatherStore.getState().setLocation(location);
+    
+    // Invalidate all weather queries to refetch with new location
+    console.log("🔄 Invalidating weather and suggestion queries...");
+    queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
+    
+    // Force refetch all queries immediately
+    console.log("🚀 Force refetching all queries...");
+    queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
+    queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
+    
     toast.success(`Weather updated for ${location.name}`);
   };
 
-  // Handle search locations
-  const handleSearchLocations = async (query: string) => {
+  // Handle search locations - memoized to prevent infinite loops
+  const handleSearchLocations = useCallback(async (query: string) => {
     try {
       const results = await locationSearch.mutateAsync(query);
       return results.map((loc) => ({
@@ -68,7 +103,7 @@ const WeatherDashboard: React.FC = () => {
       toast.error("Failed to search locations");
       return [];
     }
-  };
+  }, [locationSearch]);
 
   // Handle geolocation
   const handleUseCurrentLocation = () => {
@@ -253,45 +288,64 @@ const WeatherDashboard: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Additional Weather Info Cards - Future expansion */}
+            {/* Additional Weather Info Cards */}
             <motion.div
               variants={itemVariants}
-              className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+              className="space-y-8"
             >
-              {/* Placeholder cards for future features */}
-              <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-emerald-300 text-xl">📊</span>
-                  </div>
-                  <h3 className="text-white font-semibold mb-2">
-                    7-Day Forecast
-                  </h3>
-                  <p className="text-white/60 text-sm">Coming soon</p>
-                </div>
+              {/* Top Row: 5-Day Forecast and Weather Map */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* 5-Day Forecast */}
+                <PremiumForecastCard
+                  forecast={forecast}
+                  isLoading={!forecast && isAnyLoading()}
+                />
+                
+                {/* Weather Map */}
+                <PremiumWeatherMap
+                  center={currentLocation ? [currentLocation.lat, currentLocation.lon] : [40.7128, -74.006]}
+                  isLoading={!currentLocation}
+                />
               </div>
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-purple-300 text-xl">🛰️</span>
+              {/* Bottom Row: Future features */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {/* Smart Alerts placeholder */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-amber-300 text-xl">⏰</span>
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">
+                      Smart Alerts
+                    </h3>
+                    <p className="text-white/60 text-sm">Coming soon</p>
                   </div>
-                  <h3 className="text-white font-semibold mb-2">
-                    Weather Maps
-                  </h3>
-                  <p className="text-white/60 text-sm">Coming soon</p>
                 </div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-amber-300 text-xl">⏰</span>
+                
+                {/* Additional placeholders for future features */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-400/20 to-indigo-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-indigo-300 text-xl">📈</span>
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">
+                      Analytics
+                    </h3>
+                    <p className="text-white/60 text-sm">Coming soon</p>
                   </div>
-                  <h3 className="text-white font-semibold mb-2">
-                    Smart Alerts
-                  </h3>
-                  <p className="text-white/60 text-sm">Coming soon</p>
+                </div>
+                
+                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gradient-to-br from-pink-400/20 to-pink-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-pink-300 text-xl">📱</span>
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">
+                      Mobile App
+                    </h3>
+                    <p className="text-white/60 text-sm">Coming soon</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -339,7 +393,7 @@ const WeatherDashboard: React.FC = () => {
       {/* Version indicator for development */}
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-black/20 backdrop-blur-sm text-white/60 text-xs px-2 py-1 rounded-md border border-white/10">
-          v1.0.1
+          v1.0.15
         </div>
       </div>
     </motion.div>

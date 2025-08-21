@@ -1,5 +1,13 @@
 @import "tailwindcss";
 @import "@repo/tailwind-config";
+@import "leaflet/dist/leaflet.css";
+
+/* Basic Leaflet fixes */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
 
 /* Enhanced Sky-Inspired Animations */
 @keyframes gradientShift {

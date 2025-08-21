@@ -42,6 +42,8 @@ export function useCurrentWeather() {
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weather';
         setWeatherError(errorMessage);
         throw error;
+      } finally {
+        setWeatherLoading(false);
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -78,6 +80,8 @@ export function useForecast() {
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch forecast';
         setForecastError(errorMessage);
         throw error;
+      } finally {
+        setForecastLoading(false);
       }
     },
     enabled: Boolean(currentLocation),
@@ -113,6 +117,8 @@ export function useAirQuality() {
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch air quality';
         setAirQualityError(errorMessage);
         throw error;
+      } finally {
+        setAirQualityLoading(false);
       }
     },
     enabled: Boolean(currentLocation),
@@ -134,6 +140,13 @@ export function useActivitySuggestions() {
 
   const currentAqi = airQuality?.list?.[0]?.main?.aqi ?? 1;
 
+  console.log("🎯 Activity Suggestions Hook - Dependencies:", {
+    hasLocation: !!currentLocation,
+    hasForecast: !!forecast,
+    hasAirQuality: !!airQuality,
+    enabled: Boolean(currentLocation && forecast && airQuality)
+  });
+
   return useQuery({
     queryKey: currentLocation ? 
       queryKeys.suggestions.activities(
@@ -143,6 +156,7 @@ export function useActivitySuggestions() {
       ) : 
       ['suggestions', 'activities', 'disabled'] as const,
     queryFn: async () => {
+      console.log("🎯 Generating activity suggestions for:", currentLocation?.name);
       if (!forecast) throw new Error('No forecast data available');
       setSuggestionsLoading(true);
       try {
@@ -158,6 +172,8 @@ export function useActivitySuggestions() {
         const errorMessage = error instanceof Error ? error.message : 'Failed to generate suggestions';
         setSuggestionsError(errorMessage);
         throw error;
+      } finally {
+        setSuggestionsLoading(false);
       }
     },
     enabled: Boolean(currentLocation && forecast && airQuality),
