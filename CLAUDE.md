@@ -87,7 +87,11 @@ yarn lint
 ### Weather Integration
 - Uses OpenWeatherMap API (requires `OPENWEATHER_API_KEY` environment variable)
 - Fetches current weather, 5-day forecast, air pollution data, and geocoding
-- API utilities are in `apps/web/lib/weather/api.ts`
+- Clean API architecture with provider abstraction:
+  - `apps/web/lib/api/weather/` - Main weather API folder
+  - `apps/web/lib/api/weather/openweather/` - OpenWeatherMap specific implementations
+  - `apps/web/lib/api/weather/weather-service.ts` - Unified weather service layer
+  - Easy to add additional providers (e.g., Open-Meteo) in the future
 
 ### Activity Suggestions
 - Intelligent activity recommendations based on weather conditions

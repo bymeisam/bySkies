@@ -8,7 +8,7 @@ import {
   getAirPollution,
   searchLocations,
   getLocationName
-} from '../weather/api';
+} from '../api/weather';
 import { suggestActivitiesFromForecast } from '../suggestions';
 import type { Location } from '../store/weather-store';
 

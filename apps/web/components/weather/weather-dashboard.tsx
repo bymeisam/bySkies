@@ -407,7 +407,7 @@ const WeatherDashboard: React.FC = () => {
       {/* Version indicator for development */}
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-black/20 backdrop-blur-sm text-white/60 text-xs px-2 py-1 rounded-md border border-white/10">
-          v1.0.26
+          v1.0.27
         </div>
       </div>
     </motion.div>

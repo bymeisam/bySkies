@@ -18,5 +18,9 @@ export interface AirPollutionListItem {
 }
 
 export interface AirPollutionResponse {
+  coord: {
+    lat: number;
+    lon: number;
+  };
   list: AirPollutionListItem[];
 }
