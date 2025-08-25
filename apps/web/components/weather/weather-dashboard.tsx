@@ -46,18 +46,6 @@ const WeatherDashboard: React.FC = () => {
   const geolocation = useGeolocation();
   const queryClient = useQueryClient();
 
-  // Debug logging
-  useEffect(() => {
-    console.log("🔧 Store State Debug:", {
-      currentLocation,
-      currentWeather,
-      airQuality,
-      suggestions,
-      hasAllData: hasAllData(),
-      canShowSuggestions: canShowSuggestions(),
-      isAnyLoading: isAnyLoading()
-    });
-  }, [currentLocation, currentWeather, airQuality, suggestions, hasAllData, canShowSuggestions, isAnyLoading]);
 
   // Auto-fetch location on mount if not set
   useEffect(() => {
@@ -74,6 +62,13 @@ const WeatherDashboard: React.FC = () => {
   // Handle location selection
   const handleLocationSelect = (location: Location) => {
     console.log("🏙️ Location selected:", location.name);
+    console.log("📊 Store state before location change:", {
+      currentLocation: currentLocation?.name,
+      hasWeather: !!currentWeather,
+      hasForecast: !!forecast,
+      hasAirQuality: !!airQuality,
+      hasSuggestions: suggestions.length > 0
+    });
     
     // Set new location first
     useWeatherStore.getState().setLocation(location);
@@ -87,6 +82,19 @@ const WeatherDashboard: React.FC = () => {
     console.log("🚀 Force refetching all queries...");
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
+    
+    // Log state after brief delay to see what happened
+    setTimeout(() => {
+      const state = useWeatherStore.getState();
+      console.log("📈 Store state after location change:", {
+        newLocation: state.currentLocation?.name,
+        hasWeather: !!state.currentWeather,
+        hasForecast: !!state.forecast,
+        hasAirQuality: !!state.airQuality,
+        hasSuggestions: state.suggestions.length > 0,
+        canShowSuggestions: state.canShowSuggestions()
+      });
+    }, 2000);
     
     toast.success(`Weather updated for ${location.name}`);
   };
@@ -261,6 +269,7 @@ const WeatherDashboard: React.FC = () => {
                     airQuality={airQuality}
                     alerts={alerts}
                     isLoading={false}
+                    locationName={currentLocation?.name}
                   />
                 ) : (
                   <PremiumWeatherCard
@@ -268,6 +277,7 @@ const WeatherDashboard: React.FC = () => {
                     airQuality={{} as any}
                     alerts={[]}
                     isLoading={true}
+                    locationName={currentLocation?.name}
                   />
                 )}
               </div>
@@ -278,11 +288,15 @@ const WeatherDashboard: React.FC = () => {
                   <PremiumActivityCard
                     suggestions={suggestions}
                     isLoading={false}
+                    locationName={currentLocation?.name}
+                    timezone={currentWeather?.timezone}
                   />
                 ) : (
                   <PremiumActivityCard
                     suggestions={[]}
                     isLoading={isAnyLoading()}
+                    locationName={currentLocation?.name}
+                    timezone={currentWeather?.timezone}
                   />
                 )}
               </div>
@@ -393,7 +407,7 @@ const WeatherDashboard: React.FC = () => {
       {/* Version indicator for development */}
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-black/20 backdrop-blur-sm text-white/60 text-xs px-2 py-1 rounded-md border border-white/10">
-          v1.0.15
+          v1.0.26
         </div>
       </div>
     </motion.div>

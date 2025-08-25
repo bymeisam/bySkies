@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Thermometer, Wind, Droplets, Eye, MapPin, Clock } from "lucide-react";
 import type { CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
 import type { PlanningDisruptionAlert, AirQualityAlert } from "@repo/types";
+import { calculateLocalTime } from "./utils/time";
 
 interface PremiumWeatherCardProps {
   weather: CurrentWeatherResponse;
@@ -10,6 +11,7 @@ interface PremiumWeatherCardProps {
   alerts?: (PlanningDisruptionAlert | AirQualityAlert)[];
   isLoading?: boolean;
   className?: string;
+  locationName?: string;
 }
 
 const getAQIInfo = (aqi: number) => {
@@ -116,6 +118,7 @@ export const PremiumWeatherCard: React.FC<PremiumWeatherCardProps> = ({
   alerts = [],
   isLoading = false,
   className = "",
+  locationName = "",
 }) => {
   const currentAQI = airQuality?.list?.[0]?.main?.aqi || 1;
   const aqiInfo = getAQIInfo(currentAQI);
@@ -184,16 +187,11 @@ export const PremiumWeatherCard: React.FC<PremiumWeatherCardProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-white/90">
               <MapPin className="w-4 h-4" />
-              <span className="font-medium">{weather?.name || "Loading..."}</span>
+              <span className="font-medium">{locationName || weather?.name || "Loading..."}</span>
             </div>
             <div className="flex items-center gap-2 text-white/60 text-sm">
               <Clock className="w-3 h-3" />
-              <span>
-                {new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
+              <span>{calculateLocalTime(weather?.timezone)}</span>
             </div>
           </div>
 

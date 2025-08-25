@@ -42,6 +42,7 @@ export interface CurrentWeatherResponse {
   visibility: number;
   dt: number;
   sys: Sys;
+  timezone: number;
   name: string;
 }
 

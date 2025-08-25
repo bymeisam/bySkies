@@ -10,12 +10,14 @@ import {
   Activity,
 } from "lucide-react";
 import type { ActivitySuggestion } from "@repo/types";
+import { formatTimeInTimezone, getTimeUntilInTimezone } from "./utils/time";
 
 interface PremiumActivityCardProps {
   suggestions: ActivitySuggestion[];
   isLoading?: boolean;
   className?: string;
   locationName?: string;
+  timezone?: number;
 }
 
 const getActivityIcon = (activity: string) => {
@@ -66,35 +68,12 @@ const getConfidenceColor = (confidence: number) => {
   };
 };
 
-const formatTime = (dateString?: string) => {
-  if (!dateString) return "";
-  try {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  } catch {
-    return dateString;
-  }
+const formatTime = (dateString?: string, timezone?: number) => {
+  return formatTimeInTimezone(dateString, timezone);
 };
 
-const getTimeUntil = (dateString?: string) => {
-  if (!dateString) return "";
-  try {
-    const targetTime = new Date(dateString);
-    const now = new Date();
-    const diffMs = targetTime.getTime() - now.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (diffHours <= 0 && diffMins <= 0) return "Now";
-    if (diffHours <= 0) return `in ${diffMins}m`;
-    if (diffHours < 24) return `in ${diffHours}h ${diffMins}m`;
-    return "Later today";
-  } catch {
-    return "";
-  }
+const getTimeUntil = (dateString?: string, timezone?: number) => {
+  return getTimeUntilInTimezone(dateString, timezone);
 };
 
 const ActivitySkeleton = () => (
@@ -124,9 +103,10 @@ const ActivitySkeleton = () => (
 const SuggestionCard: React.FC<{
   suggestion: ActivitySuggestion;
   index: number;
-}> = ({ suggestion, index }) => {
+  timezone?: number;
+}> = ({ suggestion, index, timezone }) => {
   const confidenceColors = getConfidenceColor(suggestion.confidence);
-  const timeUntil = getTimeUntil(suggestion?.start);
+  const timeUntil = getTimeUntil(suggestion?.start, timezone);
 
   return (
     <motion.div
@@ -157,7 +137,7 @@ const SuggestionCard: React.FC<{
               </h3>
               <div className="flex items-center gap-2 text-white/60 text-sm mt-1">
                 <Clock className="w-4 h-4 flex-shrink-0" />
-                <span>{formatTime(suggestion.start)}</span>
+                <span>{formatTime(suggestion.start, timezone)}</span>
                 {timeUntil && (
                   <>
                     <span className="text-white/40">•</span>
@@ -209,7 +189,7 @@ const SuggestionCard: React.FC<{
         <div className="flex items-center gap-2 pt-3 border-t border-white/10">
           <Calendar className="w-4 h-4 text-white/50 flex-shrink-0" />
           <span className="text-white/60 text-sm">
-            Good until {formatTime(suggestion.end)}
+            Good until {formatTime(suggestion.end, timezone)}
           </span>
         </div>
       </div>
@@ -221,6 +201,8 @@ export const PremiumActivityCard: React.FC<PremiumActivityCardProps> = ({
   suggestions,
   isLoading = false,
   className = "",
+  locationName = "",
+  timezone,
 }) => {
   if (isLoading) {
     return (
@@ -288,7 +270,7 @@ export const PremiumActivityCard: React.FC<PremiumActivityCardProps> = ({
             </motion.div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white">
-                Perfect Activities
+                Perfect Activities{locationName ? ` for ${locationName}` : ''}
               </h2>
               <p className="text-white/60 text-sm">
                 Based on current sky conditions
@@ -309,6 +291,7 @@ export const PremiumActivityCard: React.FC<PremiumActivityCardProps> = ({
               key={`${suggestion.activity}-${suggestion.start}-${index}`}
               suggestion={suggestion}
               index={index}
+              timezone={timezone}
             />
           ))}
         </div>

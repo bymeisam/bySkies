@@ -140,12 +140,21 @@ export function useActivitySuggestions() {
 
   const currentAqi = airQuality?.list?.[0]?.main?.aqi ?? 1;
 
-  console.log("🎯 Activity Suggestions Hook - Dependencies:", {
-    hasLocation: !!currentLocation,
-    hasForecast: !!forecast,
-    hasAirQuality: !!airQuality,
-    enabled: Boolean(currentLocation && forecast && airQuality)
-  });
+  // Check if forecast and air quality data match current location
+  const forecastMatchesLocation = forecast && currentLocation && 
+    Math.abs(forecast.city.coord.lat - currentLocation.lat) < 0.01 &&
+    Math.abs(forecast.city.coord.lon - currentLocation.lon) < 0.01;
+  
+  const airQualityMatchesLocation = airQuality && currentLocation &&
+    Math.abs(airQuality.coord.lat - currentLocation.lat) < 0.01 &&
+    Math.abs(airQuality.coord.lon - currentLocation.lon) < 0.01;
+  
+  const allDataMatches = Boolean(currentLocation && forecastMatchesLocation && airQualityMatchesLocation);
+
+  // Only log when dependencies change for Perfect Activities debugging
+  if (currentLocation) {
+    console.log("🎯 Perfect Activities - Location:", currentLocation.name, "| Forecast Match:", forecastMatchesLocation, "| Air Quality Match:", airQualityMatchesLocation, "| Enabled:", allDataMatches);
+  }
 
   return useQuery({
     queryKey: currentLocation ? 
@@ -156,7 +165,8 @@ export function useActivitySuggestions() {
       ) : 
       ['suggestions', 'activities', 'disabled'] as const,
     queryFn: async () => {
-      console.log("🎯 Generating activity suggestions for:", currentLocation?.name);
+      console.log("🎯 GENERATING Perfect Activities for:", currentLocation?.name);
+      
       if (!forecast) throw new Error('No forecast data available');
       setSuggestionsLoading(true);
       try {
@@ -166,9 +176,11 @@ export function useActivitySuggestions() {
           [], // TODO: Add AQI history
           new Date().toISOString()
         );
+        console.log("🎯 Generated", suggestions.suggestions?.length || 0, "activities for", currentLocation?.name);
         setSuggestions(suggestions);
         return suggestions;
       } catch (error) {
+        console.error("🎯 Perfect Activities generation failed:", error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to generate suggestions';
         setSuggestionsError(errorMessage);
         throw error;
@@ -176,7 +188,7 @@ export function useActivitySuggestions() {
         setSuggestionsLoading(false);
       }
     },
-    enabled: Boolean(currentLocation && forecast && airQuality),
+    enabled: allDataMatches,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 15 * 60 * 1000, // 15 minutes
   });
