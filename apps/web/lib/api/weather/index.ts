@@ -9,6 +9,7 @@ export {
 
 // Direct provider access (for legacy compatibility or specific needs)
 export * as OpenWeatherMapAPI from './openweather';
+export * as OpenMeteoAPI from './open-meteo';
 
 // Types
 export type {
@@ -29,3 +30,13 @@ export {
   searchLocations,
   getLocationName,
 } from './openweather';
+
+// Extended forecast function
+export const getExtendedForecast = async (
+  lat: number, 
+  lon: number, 
+  locationName?: string
+) => {
+  const { weatherService } = await import('./weather-service');
+  return weatherService.getExtendedForecast(lat, lon, locationName);
+};

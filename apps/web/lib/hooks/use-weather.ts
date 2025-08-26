@@ -7,7 +7,8 @@ import {
   getForecast,
   getAirPollution,
   searchLocations,
-  getLocationName
+  getLocationName,
+  getExtendedForecast
 } from '../api/weather';
 import { suggestActivitiesFromForecast } from '../suggestions';
 import type { Location } from '../store/weather-store';
@@ -87,6 +88,33 @@ export function useForecast() {
     enabled: Boolean(currentLocation),
     staleTime: 15 * 60 * 1000, // 15 minutes - forecast changes less frequently
     refetchInterval: 30 * 60 * 1000, // 30 minutes
+  });
+}
+
+// Extended Forecast Hook (16-day Open-Meteo)
+export function useExtendedForecast() {
+  const { currentLocation } = useWeatherStore();
+
+  return useQuery({
+    queryKey: currentLocation ? 
+      ['weather', 'extended-forecast', currentLocation.lat, currentLocation.lon] as const : 
+      ['weather', 'extended-forecast', 'disabled'] as const,
+    queryFn: async () => {
+      if (!currentLocation) throw new Error('No location available');
+      return await getExtendedForecast(
+        currentLocation.lat, 
+        currentLocation.lon,
+        currentLocation.name
+      );
+    },
+    enabled: Boolean(currentLocation),
+    staleTime: 30 * 60 * 1000, // 30 minutes - extended forecast changes less frequently
+    refetchInterval: 60 * 60 * 1000, // 60 minutes
+    retry: (failureCount, error) => {
+      // Only retry network errors, not API errors
+      if (failureCount >= 2) return false;
+      return true;
+    },
   });
 }
 
@@ -302,12 +330,14 @@ export function useGeolocation() {
 export function useWeatherData() {
   const weather = useCurrentWeather();
   const forecast = useForecast();
+  const extendedForecast = useExtendedForecast();
   const airQuality = useAirQuality();
   const suggestions = useActivitySuggestions();
 
   return {
     weather,
     forecast,
+    extendedForecast,
     airQuality,
     suggestions,
     isLoading: weather.isLoading || forecast.isLoading || airQuality.isLoading,
@@ -315,6 +345,7 @@ export function useWeatherData() {
     refetchAll: () => {
       weather.refetch();
       forecast.refetch();
+      extendedForecast.refetch();
       airQuality.refetch();
       suggestions.refetch();
     },

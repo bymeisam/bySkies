@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Cloud,
@@ -10,13 +10,17 @@ import {
   Droplets,
   TrendingUp,
   Calendar,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import type { ForecastResponse } from "@repo/types";
 
 interface PremiumForecastCardProps {
   forecast: ForecastResponse | null;
+  extendedForecast?: ForecastResponse | null;
   isLoading?: boolean;
   className?: string;
+  onExtendedToggle?: (enabled: boolean) => void;
 }
 
 const getWeatherIcon = (weather: string, iconCode?: string) => {
@@ -140,9 +144,15 @@ const DayForecast: React.FC<{
 
 export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
   forecast,
+  extendedForecast,
   isLoading = false,
   className = "",
+  onExtendedToggle,
 }) => {
+  const [useExtended, setUseExtended] = useState(false);
+  
+  const activeForecast = useExtended && extendedForecast ? extendedForecast : forecast;
+  const maxDays = useExtended ? 16 : 5;
   if (isLoading) {
     return (
       <motion.div
@@ -161,7 +171,12 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
     );
   }
 
-  if (!forecast || !forecast.list || forecast.list.length === 0) {
+  const handleToggle = (enabled: boolean) => {
+    setUseExtended(enabled);
+    onExtendedToggle?.(enabled);
+  };
+
+  if (!activeForecast || !activeForecast.list || activeForecast.list.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -184,7 +199,7 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
   }
 
   // Group forecast by days (3-hour intervals -> daily summaries)
-  const dailyForecasts = forecast.list.reduce((acc, item) => {
+  const dailyForecasts = activeForecast.list.reduce((acc, item) => {
     const date = new Date(item.dt * 1000).toDateString();
     
     if (!acc[date]) {
@@ -206,8 +221,8 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
     return acc;
   }, {} as Record<string, any>);
 
-  // Convert to array and get first 5 days
-  const dailyData = Object.values(dailyForecasts).slice(0, 5).map((day: any) => ({
+  // Convert to array and get days based on mode
+  const dailyData = Object.values(dailyForecasts).slice(0, maxDays).map((day: any) => ({
     day: formatDate(day.date),
     weather: day.weather.main,
     icon: day.weather.icon,
@@ -238,12 +253,32 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
             </motion.div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white">
-                5-Day Forecast
+                {useExtended ? '16-Day' : '5-Day'} Forecast
               </h2>
               <p className="text-white/60 text-sm">
-                Weather outlook for {forecast.city.name}
+                Weather outlook for {activeForecast.city.name}
+                {useExtended && extendedForecast && <span className="ml-1 text-emerald-300">• Extended</span>}
               </p>
             </div>
+            
+            {/* Toggle Button */}
+            {extendedForecast && (
+              <motion.button
+                onClick={() => handleToggle(!useExtended)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-200"
+              >
+                {useExtended ? (
+                  <ToggleRight className="w-5 h-5 text-emerald-300" />
+                ) : (
+                  <ToggleLeft className="w-5 h-5 text-white/60" />
+                )}
+                <span className="text-white text-sm font-medium">
+                  {useExtended ? '5 days' : '16 days'}
+                </span>
+              </motion.button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-white/60 text-sm">
@@ -266,7 +301,10 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
         {/* Footer */}
         <div className="pt-4 border-t border-white/10">
           <p className="text-white/50 text-xs text-center">
-            Forecast updates every 3 hours with detailed weather conditions
+            {useExtended 
+              ? 'Extended 16-day forecast powered by Open-Meteo' 
+              : 'Forecast updates every 3 hours with detailed weather conditions'
+            }
           </p>
         </div>
       </div>

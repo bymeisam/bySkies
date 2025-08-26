@@ -14,6 +14,7 @@ import {
   useWeatherStore,
   useCurrentWeather,
   useForecast,
+  useExtendedForecast,
   useAirQuality,
   useActivitySuggestions,
   useLocationSearch,
@@ -39,6 +40,7 @@ const WeatherDashboard: React.FC = () => {
   // API hooks
   const weatherQuery = useCurrentWeather();
   const forecastQuery = useForecast();
+  const extendedForecastQuery = useExtendedForecast();
   const airQualityQuery = useAirQuality();
   const suggestionsQuery = useActivitySuggestions();
 
@@ -77,11 +79,13 @@ const WeatherDashboard: React.FC = () => {
     console.log("🔄 Invalidating weather and suggestion queries...");
     queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
+    queryClient.invalidateQueries({ queryKey: ['weather', 'extended-forecast'] });
     
     // Force refetch all queries immediately
     console.log("🚀 Force refetching all queries...");
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
+    queryClient.refetchQueries({ queryKey: ['weather', 'extended-forecast'] });
     
     // Log state after brief delay to see what happened
     setTimeout(() => {
@@ -309,10 +313,14 @@ const WeatherDashboard: React.FC = () => {
             >
               {/* Top Row: 5-Day Forecast and Weather Map */}
               <div className="grid gap-6 lg:grid-cols-2">
-                {/* 5-Day Forecast */}
+                {/* 5-Day Forecast with 16-Day Toggle */}
                 <PremiumForecastCard
                   forecast={forecast}
+                  extendedForecast={extendedForecastQuery.data}
                   isLoading={!forecast && isAnyLoading()}
+                  onExtendedToggle={(enabled: boolean) => {
+                    console.log(enabled ? '🚀 Switched to 16-day forecast' : '🔙 Switched to 5-day forecast');
+                  }}
                 />
                 
                 {/* Weather Map */}

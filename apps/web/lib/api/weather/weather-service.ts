@@ -14,6 +14,7 @@ import type {
 } from './types';
 
 import * as OpenWeatherMapAPI from './openweather';
+import * as OpenMeteoAPI from './open-meteo';
 
 // OpenWeatherMap service implementation
 class OpenWeatherMapService implements WeatherService {
@@ -86,6 +87,58 @@ class OpenWeatherMapService implements WeatherService {
   }
 }
 
+// OpenMeteo service implementation (limited functionality)
+class OpenMeteoService implements WeatherService {
+  async getCurrentWeather(
+    lat: number,
+    lon: number,
+    units: string = "metric"
+  ): Promise<CurrentWeatherResponse> {
+    throw new WeatherServiceError(
+      'Current weather not available through Open-Meteo. Use OpenWeatherMap for current conditions.',
+      WeatherProvider.OPENMETEO
+    );
+  }
+
+  async getForecast(
+    lat: number,
+    lon: number,
+    units: string = "metric"
+  ): Promise<ForecastResponse> {
+    try {
+      // Get 16-day forecast from Open-Meteo
+      return await OpenMeteoAPI.getOpenMeteoForecast(lat, lon, 16);
+    } catch (error) {
+      throw new WeatherServiceError(
+        `Failed to get Open-Meteo forecast: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        WeatherProvider.OPENMETEO,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  async getAirPollution(lat: number, lon: number): Promise<AirPollutionResponse> {
+    throw new WeatherServiceError(
+      'Air pollution data not available through Open-Meteo. Use OpenWeatherMap for air quality data.',
+      WeatherProvider.OPENMETEO
+    );
+  }
+
+  async searchLocations(query: string, limit: number = 5): Promise<GeocodingResponse> {
+    throw new WeatherServiceError(
+      'Location search not available through Open-Meteo. Use OpenWeatherMap for geocoding.',
+      WeatherProvider.OPENMETEO
+    );
+  }
+
+  async getLocationName(lat: number, lon: number): Promise<GeocodingResponse> {
+    throw new WeatherServiceError(
+      'Reverse geocoding not available through Open-Meteo. Use OpenWeatherMap for location names.',
+      WeatherProvider.OPENMETEO
+    );
+  }
+}
+
 // Weather service factory
 class WeatherServiceFactory {
   private static instances: Map<WeatherProvider, WeatherService> = new Map();
@@ -101,8 +154,8 @@ class WeatherServiceFactory {
         service = new OpenWeatherMapService();
         break;
       case WeatherProvider.OPENMETEO:
-        // Future implementation
-        throw new Error('OpenMeteo provider not implemented yet');
+        service = new OpenMeteoService();
+        break;
       default:
         throw new Error(`Unsupported weather provider: ${provider}`);
     }
@@ -175,6 +228,20 @@ export class UnifiedWeatherService implements WeatherService {
     if (provider !== this.config.provider) {
       this.config.provider = provider;
       this.service = WeatherServiceFactory.getService(provider);
+    }
+  }
+
+  // Get extended forecast from Open-Meteo while keeping current provider
+  async getExtendedForecast(
+    lat: number,
+    lon: number,
+    locationName?: string
+  ): Promise<ForecastResponse | null> {
+    try {
+      return await OpenMeteoAPI.getOpenMeteoForecast(lat, lon, 16, locationName);
+    } catch (error) {
+      console.warn('Extended forecast unavailable:', error);
+      return null;
     }
   }
 }
