@@ -105,36 +105,36 @@ const DayForecast: React.FC<{
       whileHover={{ scale: 1.02, y: -2 }}
       className="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all duration-300 hover:bg-white/10"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-2xl border border-sky-400/30"
-          >
-            {getWeatherIcon(weather, icon)}
-          </motion.div>
-          
-          <div className="space-y-1">
-            <h4 className="text-white font-semibold text-lg">{day}</h4>
-            <p className="text-white/60 text-sm capitalize">{description}</p>
-          </div>
+      <div className="flex flex-col items-center text-center space-y-3">
+        {/* Weather Icon */}
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-2xl border border-sky-400/30"
+        >
+          {getWeatherIcon(weather, icon)}
+        </motion.div>
+        
+        {/* Day and Description */}
+        <div className="space-y-1">
+          <h4 className="text-white font-semibold text-sm">{day}</h4>
+          <p className="text-white/60 text-xs capitalize">{description}</p>
         </div>
         
-        <div className="text-right space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-white font-bold text-xl">{Math.round(high)}°</span>
-            <span className="text-white/60 text-lg">{Math.round(low)}°</span>
+        {/* Temperature */}
+        <div className="flex items-center gap-2">
+          <span className="text-white font-bold text-lg">{Math.round(high)}°</span>
+          <span className="text-white/60 text-sm">{Math.round(low)}°</span>
+        </div>
+        
+        {/* Weather Details */}
+        <div className="flex items-center justify-center gap-3 text-xs text-white/50">
+          <div className="flex items-center gap-1">
+            <Droplets className="w-3 h-3" />
+            <span>{humidity}%</span>
           </div>
-          
-          <div className="flex items-center gap-3 text-xs text-white/50">
-            <div className="flex items-center gap-1">
-              <Droplets className="w-3 h-3" />
-              <span>{humidity}%</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Wind className="w-3 h-3" />
-              <span>{Math.round(windSpeed)}m/s</span>
-            </div>
+          <div className="flex items-center gap-1">
+            <Wind className="w-3 h-3" />
+            <span>{Math.round(windSpeed)}m/s</span>
           </div>
         </div>
       </div>
@@ -288,7 +288,7 @@ export const PremiumForecastCard: React.FC<PremiumForecastCardProps> = ({
         </div>
 
         {/* Forecast Days */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {dailyData.map((dayData, index) => (
             <DayForecast
               key={`${dayData.day}-${index}`}
