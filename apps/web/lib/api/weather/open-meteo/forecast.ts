@@ -20,8 +20,8 @@ function convertOpenMeteoToForecast(
   
   const list: ForecastListItem[] = daily.time.map((dateStr, index) => {
     const date = new Date(dateStr);
-    const weatherCode = daily.weather_code[index];
-    const weatherInfo = WEATHER_CODE_MAP[weatherCode] || WEATHER_CODE_MAP[0];
+    const weatherCode = daily.weather_code[index] ?? 0;
+    const weatherInfo = WEATHER_CODE_MAP[weatherCode as keyof typeof WEATHER_CODE_MAP] || WEATHER_CODE_MAP[0];
     
     const tempMax = daily.temperature_2m_max[index] ?? 20;
     const tempMin = daily.temperature_2m_min[index] ?? 15;
@@ -30,9 +30,9 @@ function convertOpenMeteoToForecast(
     
     const weather: Weather = {
       id: weatherCode ?? 0,
-      main: weatherInfo.main,
-      description: weatherInfo.description,
-      icon: weatherInfo.icon,
+      main: weatherInfo?.main || 'Clear',
+      description: weatherInfo?.description || 'clear sky',
+      icon: weatherInfo?.icon || '01d',
     };
     
     return {

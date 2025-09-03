@@ -10,6 +10,7 @@ import {
   getLocationName,
   getExtendedForecast
 } from '../api/weather';
+import { getSolarWeatherData } from '../api/weather/open-meteo';
 import { suggestActivitiesFromForecast } from '../suggestions';
 import type { Location } from '../store/weather-store';
 
@@ -323,6 +324,39 @@ export function useGeolocation() {
     onError: (error: Error) => {
       setLocationError(error.message);
     },
+  });
+}
+
+// Solar Forecast Hook (worldwide coverage)
+export function useSolarForecast() {
+  const { currentLocation } = useWeatherStore();
+
+  return useQuery({
+    queryKey: currentLocation ? 
+      ['weather', 'solar', currentLocation.lat, currentLocation.lon] as const : 
+      ['weather', 'solar', 'disabled'] as const,
+    enabled: Boolean(currentLocation),
+    queryFn: async () => {
+      if (!currentLocation) throw new Error('No location available');
+      
+      console.log("☀️ Fetching solar & UV data for", currentLocation.name);
+      const solarData = await getSolarWeatherData(
+        currentLocation.lat,
+        currentLocation.lon
+      );
+      
+      console.log("☀️ Solar data received:", {
+        current_uv: solarData?.uv_warnings?.current_uv || 0,
+        peak_uv: solarData?.uv_warnings?.peak_uv_today || 0,
+        photography_score: solarData?.photography_score || 0,
+        solar_energy_score: solarData?.solar_energy_score || 0,
+        next_golden_hour: solarData?.next_golden_hour?.minutes_until || 'none'
+      });
+      
+      return solarData;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - solar data changes more slowly
+    refetchInterval: 30 * 60 * 1000, // 30 minutes
   });
 }
 

@@ -9,6 +9,7 @@ import {
   PremiumForecastCard,
   PremiumWeatherMap,
   LocationSelector,
+  SolarUVCard,
 } from "@repo/ui";
 import {
   useWeatherStore,
@@ -19,6 +20,7 @@ import {
   useActivitySuggestions,
   useLocationSearch,
   useGeolocation,
+  useSolarForecast,
 } from "@/lib/hooks/use-weather";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query/query-client";
@@ -43,6 +45,7 @@ const WeatherDashboard: React.FC = () => {
   const extendedForecastQuery = useExtendedForecast();
   const airQualityQuery = useAirQuality();
   const suggestionsQuery = useActivitySuggestions();
+  const solarForecastQuery = useSolarForecast();
 
   const locationSearch = useLocationSearch();
   const geolocation = useGeolocation();
@@ -76,16 +79,18 @@ const WeatherDashboard: React.FC = () => {
     useWeatherStore.getState().setLocation(location);
     
     // Invalidate all weather queries to refetch with new location
-    console.log("🔄 Invalidating weather and suggestion queries...");
+    console.log("🔄 Invalidating weather, suggestion, and solar queries...");
     queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.invalidateQueries({ queryKey: ['weather', 'extended-forecast'] });
+    queryClient.invalidateQueries({ queryKey: ['weather', 'solar'] });
     
     // Force refetch all queries immediately
     console.log("🚀 Force refetching all queries...");
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.refetchQueries({ queryKey: ['weather', 'extended-forecast'] });
+    queryClient.refetchQueries({ queryKey: ['weather', 'solar'] });
     
     // Log state after brief delay to see what happened
     setTimeout(() => {
@@ -306,6 +311,14 @@ const WeatherDashboard: React.FC = () => {
               </div>
             </motion.div>
 
+            {/* Solar & UV Intelligence Card */}
+            <motion.div variants={itemVariants}>
+              <SolarUVCard
+                solarForecast={solarForecastQuery.data || null}
+                isLoading={solarForecastQuery.isLoading}
+              />
+            </motion.div>
+
             {/* Additional Weather Info Cards */}
             <motion.div
               variants={itemVariants}
@@ -415,7 +428,7 @@ const WeatherDashboard: React.FC = () => {
       {/* Version indicator for development */}
       <div className="fixed bottom-4 right-4 z-50">
         <div className="bg-black/20 backdrop-blur-sm text-white/60 text-xs px-2 py-1 rounded-md border border-white/10">
-          v1.0.27
+          v1.0.28-solar
         </div>
       </div>
     </motion.div>

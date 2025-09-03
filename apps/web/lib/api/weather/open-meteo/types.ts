@@ -57,3 +57,84 @@ export const WEATHER_CODE_MAP: Record<number, { main: string; description: strin
   96: { main: 'Thunderstorm', description: 'thunderstorm with slight hail', icon: '11d' },
   99: { main: 'Thunderstorm', description: 'thunderstorm with heavy hail', icon: '11d' },
 };
+
+// Open-Meteo Solar & UV response (available worldwide)
+export interface OpenMeteoSolarResponse {
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  hourly_units: {
+    time: string;
+    shortwave_radiation: string;
+    direct_radiation: string;
+    diffuse_radiation: string;
+    uv_index: string;
+  };
+  hourly: {
+    time: string[];
+    shortwave_radiation: number[];
+    direct_radiation: number[];
+    diffuse_radiation: number[];
+    uv_index: number[];
+  };
+  daily_units: {
+    time: string;
+    sunrise: string;
+    sunset: string;
+    sunshine_duration: string;
+    uv_index_max: string;
+  };
+  daily: {
+    time: string[];
+    sunrise: string[];
+    sunset: string[];
+    sunshine_duration: number[];
+    uv_index_max: number[];
+  };
+}
+
+// Processed solar data for enhanced activity planning
+export interface SolarTiming {
+  time: string;
+  shortwave_radiation: number; // W/m²
+  direct_radiation: number;    // W/m²
+  diffuse_radiation: number;   // W/m²
+  uv_index: number;           // 0-11+ scale
+  isGoldenHour: boolean;
+  isDaylight: boolean;
+}
+
+export interface DayInfo {
+  date: string;
+  sunrise: string;
+  sunset: string;
+  sunshine_duration: number; // seconds
+  daylight_duration: number; // minutes
+  uv_index_max: number;
+  golden_hour_start: string;
+  golden_hour_end: string;
+}
+
+export interface SolarForecast {
+  current: SolarTiming | null;
+  hourly: SolarTiming[];
+  daily: DayInfo[];
+  next_golden_hour?: {
+    type: 'morning' | 'evening';
+    start: string;
+    end: string;
+    minutes_until: number;
+  };
+  uv_warnings: {
+    current_uv: number;
+    peak_uv_today: number;
+    protection_needed: boolean;
+    protection_message: string;
+  };
+  photography_score: number; // 0-100
+  solar_energy_score: number; // 0-100
+};
