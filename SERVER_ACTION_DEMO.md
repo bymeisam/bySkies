@@ -1,22 +1,26 @@
-# Server Actions Implementation for Weather Forecast
+# Server Actions Implementation for Weather Data
 
-This demonstrates converting the `useForecast` React Query + Zustand approach to Next.js Server Actions.
+This demonstrates converting both `useCurrentWeather` and `useForecast` React Query + Zustand hooks to Next.js Server Actions.
 
 ## What Was Changed
 
 ### Before (Client-side with React Query + Zustand)
+- `useCurrentWeather()` hook in `/lib/hooks/use-weather.ts` (lines 18-54)
 - `useForecast()` hook in `/lib/hooks/use-weather.ts` (lines 57-93)
 - Used React Query for data fetching and caching
-- Zustand store for state management
+- Zustand store for state management  
 - All data fetching happened on the client-side
 - Required loading states, error handling, and refetch logic
 
 ### After (Server Actions)
-- Server action in `/lib/actions/weather-actions.ts`
+- Server actions in `/lib/actions/weather-actions.ts`:
+  - `getCurrentWeatherAction()` - 5 minute cache
+  - `getForecastAction()` - 15 minute cache
 - Server component in `/app/forecast/page.tsx`
 - Client component in `/components/weather/server-weather-dashboard.tsx`
 - Data fetched on the server during page render
 - Built-in Next.js caching with `unstable_cache`
+- Parallel data fetching with `Promise.all()`
 
 ## Key Benefits
 
@@ -34,20 +38,24 @@ This demonstrates converting the `useForecast` React Query + Zustand approach to
 
 ## Usage Examples
 
-Visit these URLs to see the server action in action:
+Visit these URLs to see both current weather and forecast server actions in action:
 
 - NYC: `/forecast?lat=40.7128&lon=-74.0060`
 - SF: `/forecast?lat=37.7749&lon=-122.4194`
 - London: `/forecast?lat=51.5074&lon=-0.1278`
 - Custom: `/forecast?lat=YOUR_LAT&lon=YOUR_LON&units=metric`
 
+Each page now fetches both current weather and 5-day forecast data server-side in parallel.
+
 ## Implementation Details
 
 ### Server Action Features
-- Uses `unstable_cache` for 15-minute caching
+- **Current Weather**: 5-minute cache (more frequent updates)
+- **Forecast**: 15-minute cache (less frequent changes)
 - Proper error handling with typed responses
-- Support for different unit systems
+- Support for different unit systems (metric/imperial/kelvin)
 - Cache tags for selective revalidation
+- Parallel fetching of both data types with `Promise.all()`
 
 ### Performance Improvements
 - Static generation where possible

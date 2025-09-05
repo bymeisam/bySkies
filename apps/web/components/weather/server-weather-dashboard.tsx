@@ -4,15 +4,18 @@ import React from "react";
 import { motion } from "framer-motion";
 import {
   PremiumForecastCard,
+  PremiumWeatherCard,
 } from "@repo/ui";
-import type { ForecastResponse } from "@repo/types";
+import type { ForecastResponse, CurrentWeatherResponse } from "@repo/types";
 
 interface ServerWeatherDashboardProps {
+  currentWeather: CurrentWeatherResponse | null;
   forecast: ForecastResponse | null;
   error?: string;
 }
 
 const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
+  currentWeather,
   forecast,
   error
 }) => {
@@ -49,11 +52,11 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
     );
   }
 
-  if (!forecast) {
+  if (!currentWeather && !forecast) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">No Forecast Data</h2>
+          <h2 className="text-2xl font-bold mb-4">No Weather Data</h2>
           <p className="text-slate-300">Please check your location settings</p>
         </div>
       </div>
@@ -88,23 +91,41 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
       <div className="relative z-10 container mx-auto px-4 py-8">
         <motion.div variants={itemVariants} className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Weather Forecast
+            Weather Dashboard
           </h1>
           <p className="text-slate-300">
-            Server-side rendered weather data for {forecast.city.name}
+            Server-side rendered weather data for {currentWeather?.name || forecast?.city.name || 'Unknown Location'}
           </p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="max-w-4xl mx-auto">
-          <PremiumForecastCard
-            forecast={forecast}
-            extendedForecast={null}
-            isLoading={false}
-            error={null}
-            onToggleExtended={() => {}}
-            useExtended={false}
-          />
-        </motion.div>
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Current Weather Card */}
+          {currentWeather && (
+            <motion.div variants={itemVariants}>
+              <PremiumWeatherCard
+                weather={currentWeather}
+                airQuality={null}
+                alerts={[]}
+                isLoading={false}
+                error={null}
+              />
+            </motion.div>
+          )}
+
+          {/* Forecast Card */}
+          {forecast && (
+            <motion.div variants={itemVariants}>
+              <PremiumForecastCard
+                forecast={forecast}
+                extendedForecast={null}
+                isLoading={false}
+                error={null}
+                onToggleExtended={() => {}}
+                useExtended={false}
+              />
+            </motion.div>
+          )}
+        </div>
       </div>
     </motion.div>
   );

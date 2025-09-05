@@ -1,4 +1,4 @@
-import { getForecastAction } from "@/lib/actions/weather-actions";
+import { getForecastAction, getCurrentWeatherAction } from "@/lib/actions/weather-actions";
 import ServerWeatherDashboard from "@/components/weather/server-weather-dashboard";
 import { Suspense } from "react";
 
@@ -39,14 +39,27 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
     );
   }
 
-  // Fetch forecast data using server action
-  const result = await getForecastAction(lat, lon, units);
+  // Fetch both current weather and forecast data using server actions
+  const [currentWeatherResult, forecastResult] = await Promise.all([
+    getCurrentWeatherAction(lat, lon, units),
+    getForecastAction(lat, lon, units)
+  ]);
+
+  // Combine any errors
+  const errors = [];
+  if (!currentWeatherResult.success && currentWeatherResult.error) {
+    errors.push(`Current Weather: ${currentWeatherResult.error}`);
+  }
+  if (!forecastResult.success && forecastResult.error) {
+    errors.push(`Forecast: ${forecastResult.error}`);
+  }
 
   return (
     <Suspense fallback={<ForecastLoading />}>
       <ServerWeatherDashboard 
-        forecast={result.success ? result.data || null : null}
-        error={result.success ? undefined : result.error}
+        currentWeather={currentWeatherResult.success ? currentWeatherResult.data || null : null}
+        forecast={forecastResult.success ? forecastResult.data || null : null}
+        error={errors.length > 0 ? errors.join(', ') : undefined}
       />
     </Suspense>
   );

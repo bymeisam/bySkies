@@ -11,17 +11,26 @@ export default function Page() {
           <div className="text-sm">
             <span className="text-green-300">Current:</span> Client + React Query + Zustand
           </div>
+          <div className="text-sm font-semibold text-yellow-300 mt-2 mb-1">
+            New: Server Actions
+          </div>
           <Link 
             href="/forecast?lat=40.7128&lon=-74.0060" 
-            className="text-blue-300 hover:text-blue-100 underline text-sm"
+            className="text-blue-300 hover:text-blue-100 underline text-sm block"
           >
-            New: Server Action (NYC)
+            NYC Weather + Forecast
           </Link>
           <Link 
             href="/forecast?lat=37.7749&lon=-122.4194" 
-            className="text-blue-300 hover:text-blue-100 underline text-sm"
+            className="text-blue-300 hover:text-blue-100 underline text-sm block"
           >
-            New: Server Action (SF)
+            SF Weather + Forecast
+          </Link>
+          <Link 
+            href="/forecast?lat=51.5074&lon=-0.1278" 
+            className="text-blue-300 hover:text-blue-100 underline text-sm block"
+          >
+            London Weather + Forecast
           </Link>
         </div>
       </div>
