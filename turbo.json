@@ -19,6 +19,10 @@
       "cache": false,
       "persistent": true,
       "env": ["OPENWEATHER_API_KEY", "NODE_ENV"]
+    },
+    "build:styles": {
+      "outputs": ["dist/**/*.css"],
+      "cache": true
     }
   }
 }

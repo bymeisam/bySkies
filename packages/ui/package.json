@@ -5,20 +5,29 @@
     "**/*.css"
   ],
   "files": [
+    "src",
     "dist"
   ],
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
     "./styles.css": "./dist/index.css",
-    "./*": "./dist/*.js"
+    "./*": {
+      "development": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
   },
   "license": "MIT",
   "scripts": {
     "build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
     "build:components": "tsc",
+    "build": "npm run build:styles && npm run build:components",
     "check-types": "tsc --noEmit",
     "dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
     "dev:components": "tsc --watch",
+    "dev": "npm run build:styles && (npm run dev:styles & npm run dev:components & wait)",
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {

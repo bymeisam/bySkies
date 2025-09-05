@@ -15,10 +15,8 @@ import {
 import {
   useWeatherStore,
   useCurrentWeather,
-  useForecast,
   useExtendedForecast,
   useAirQuality,
-  useActivitySuggestions,
   useLocationSearch,
   useGeolocation,
   useSolarForecast,
@@ -44,10 +42,8 @@ const WeatherDashboard: React.FC = () => {
 
   // API hooks
   const weatherQuery = useCurrentWeather();
-  const forecastQuery = useForecast();
   const extendedForecastQuery = useExtendedForecast();
   const airQualityQuery = useAirQuality();
-  const suggestionsQuery = useActivitySuggestions();
   const solarForecastQuery = useSolarForecast();
   const smartSuggestionsQuery = useSmartActivitySuggestions();
   const agriculturalForecastQuery = useAgriculturalForecast();
@@ -134,6 +130,7 @@ const WeatherDashboard: React.FC = () => {
           id: `${loc.lat}-${loc.lon}`,
         }));
       } catch (error) {
+        console.log({ error });
         toast.error("Failed to search locations");
         return [];
       }
@@ -352,7 +349,8 @@ const WeatherDashboard: React.FC = () => {
                   locationName={currentLocation?.name}
                   timezone={currentWeather?.timezone}
                   optimalGardeningDays={
-                    agriculturalForecastQuery.data?.weekly_summary?.best_gardening_days?.length || 0
+                    agriculturalForecastQuery.data?.weekly_summary
+                      ?.best_gardening_days?.length || 0
                   }
                 />
               </motion.div>
