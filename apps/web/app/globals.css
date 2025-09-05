@@ -1,0 +1,404 @@
+@import "tailwindcss";
+@import "@repo/tailwind-config";
+@import "leaflet/dist/leaflet.css";
+
+/* Basic Leaflet fixes */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+/* Enhanced Sky-Inspired Animations */
+@keyframes gradientShift {
+  0% {
+    background: linear-gradient(
+      135deg,
+      #3b82f6 0%,
+      #60a5fa 25%,
+      #38bdf8 50%,
+      #f59e0b 75%,
+      #fbbf24 100%
+    );
+  }
+  25% {
+    background: linear-gradient(
+      135deg,
+      #60a5fa 0%,
+      #38bdf8 25%,
+      #f59e0b 50%,
+      #fbbf24 75%,
+      #3b82f6 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      #f59e0b 0%,
+      #fbbf24 25%,
+      #3b82f6 50%,
+      #60a5fa 75%,
+      #38bdf8 100%
+    );
+  }
+  75% {
+    background: linear-gradient(
+      135deg,
+      #fbbf24 0%,
+      #3b82f6 25%,
+      #60a5fa 50%,
+      #38bdf8 75%,
+      #f59e0b 100%
+    );
+  }
+  100% {
+    background: linear-gradient(
+      135deg,
+      #3b82f6 0%,
+      #60a5fa 25%,
+      #38bdf8 50%,
+      #f59e0b 75%,
+      #fbbf24 100%
+    );
+  }
+}
+
+.animate-gradient {
+  animation: gradientShift 20s ease-in-out infinite;
+  background-size: 400% 400%;
+}
+
+/* Enhanced Cloud Animation */
+@keyframes cloudMove {
+  0% {
+    transform: translateX(-10px) translateY(0px);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(50px) translateY(-5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(80px) translateY(0px);
+    opacity: 0.6;
+  }
+}
+
+.animate-cloud-move {
+  animation: cloudMove 25s ease-in-out infinite alternate;
+}
+
+.animate-cloud-move.delay-1000 {
+  animation-delay: 3s;
+}
+
+.animate-cloud-move.delay-2000 {
+  animation-delay: 6s;
+}
+
+/* Enhanced Particle Animation */
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.8);
+    opacity: 0.2;
+  }
+  33% {
+    transform: translateY(-15px) translateX(10px) scale(1.1);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translateY(-25px) translateX(-5px) scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-30px) translateX(15px) scale(0.9);
+    opacity: 0.1;
+  }
+}
+
+.animate-particle {
+  animation: particleFloat 8s ease-in-out infinite;
+}
+
+/* Enhanced Button Glow */
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px 4px rgba(245, 158, 11, 0.3),
+      0 0 40px 8px rgba(245, 158, 11, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 30px 6px rgba(245, 158, 11, 0.5),
+      0 0 60px 12px rgba(245, 158, 11, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.animate-glow {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Enhanced Weather Card Animations */
+@keyframes bounceGentle {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+.animate-bounce-gentle {
+  animation: bounceGentle 4s ease-in-out infinite;
+}
+
+/* Enhanced Hover Effects */
+.hover\:shadow-3xl:hover {
+  box-shadow:
+    0 35px 60px -12px rgba(59, 130, 246, 0.25),
+    0 20px 25px -5px rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease-out;
+}
+
+.hover\:shadow-sky\/50:hover {
+  box-shadow: 0 20px 50px -12px rgba(59, 130, 246, 0.5);
+}
+
+.hover\:shadow-sunset\/50:hover {
+  box-shadow: 0 20px 50px -12px rgba(245, 158, 11, 0.5);
+}
+
+/* Glass Morphism Utilities */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-morphism-strong {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Sky-inspired focus rings */
+.focus-sky {
+  @apply focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2;
+}
+
+/* Text shadow utilities for sky theme */
+.text-shadow-sky {
+  text-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.text-shadow-sunset {
+  text-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Responsive typography that feels airy */
+html {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 18px;
+    line-height: 1.7;
+  }
+}
+
+/* Enhanced body styles */
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    sans-serif;
+  background: linear-gradient(
+    135deg,
+    rgb(248, 250, 252) 0%,
+    rgb(241, 245, 249) 50%,
+    rgb(226, 232, 240) 100%
+  );
+  color: rgb(71, 85, 105);
+  min-height: 100vh;
+  letter-spacing: -0.01em;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(
+      135deg,
+      rgb(15, 23, 42) 0%,
+      rgb(30, 41, 59) 50%,
+      rgb(51, 65, 85) 100%
+    );
+    color: rgb(226, 232, 240);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: rgb(30, 41, 59);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Page/component fade-in from top (like weather coming from sky) */
+@keyframes fadeInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-top {
+  animation: fadeInTop 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Gentle parallax effect for gradient backgrounds */
+@keyframes parallaxGrad {
+  0% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+.parallax-gradient {
+  background-attachment: fixed;
+  background-size: 200% 200%;
+  animation: parallaxGrad 30s ease-in-out infinite;
+}
+
+/* Sky-themed skeleton loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton-sky {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.18) 37%,
+    rgba(255, 255, 255, 0.08) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: 0.75rem;
+  backdrop-filter: blur(8px);
+}
+@media (prefers-color-scheme: dark) {
+  .skeleton-sky {
+    background: linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.15) 25%,
+      rgba(148, 163, 184, 0.3) 37%,
+      rgba(148, 163, 184, 0.15) 63%
+    );
+  }
+}
+
+/* Brief celebration for good weather */
+@keyframes sparkle {
+  0% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-12px) scale(1.05);
+    opacity: 0;
+  }
+}
+.sparkle-burst > span {
+  position: absolute;
+  animation: sparkle 800ms ease-out forwards;
+  will-change: transform, opacity;
+}
+
+/* === Custom Hero Animations === */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+@keyframes gradient-x {
+  0%,
+  100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-gradient-x {
+  animation: gradient-x 4s ease infinite;
+  background-size: 200% 200%;
+}
