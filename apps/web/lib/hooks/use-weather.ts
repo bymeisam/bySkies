@@ -10,7 +10,7 @@ import {
   getLocationName,
   getExtendedForecast
 } from '../api/weather';
-import { getSolarWeatherData } from '../api/weather/open-meteo';
+import { getSolarWeatherData, getAgriculturalData, processAgriculturalData } from '../api/weather/open-meteo';
 import { suggestActivitiesFromForecast } from '../suggestions';
 import type { Location } from '../store/weather-store';
 
@@ -357,6 +357,115 @@ export function useSolarForecast() {
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - solar data changes more slowly
     refetchInterval: 30 * 60 * 1000, // 30 minutes
+  });
+}
+
+// Agricultural Data Hook (professional farming intelligence)
+export function useAgriculturalForecast() {
+  const { currentLocation } = useWeatherStore();
+
+
+  return useQuery({
+    queryKey: currentLocation ? 
+      ['weather', 'agricultural', currentLocation.lat, currentLocation.lon] as const : 
+      ['weather', 'agricultural', 'disabled'] as const,
+    enabled: Boolean(currentLocation),
+    queryFn: async () => {
+      if (!currentLocation) throw new Error('No location available');
+      
+      console.log("🌱 DEBUG: Fetching agricultural data for", currentLocation.name, "at", currentLocation.lat, currentLocation.lon);
+      const agriculturalResponse = await getAgriculturalData({
+        latitude: currentLocation.lat,
+        longitude: currentLocation.lon,
+        days: 7 // 7 days of data
+      });
+      
+      const processedData = processAgriculturalData(agriculturalResponse);
+      
+      console.log("🌱 Agricultural data received:", {
+        current_vpd: processedData?.current?.vapour_pressure_deficit || 0,
+        current_humidity: processedData?.current?.relative_humidity || 0,
+        plant_stress: processedData?.current?.plant_stress_level || 'unknown',
+        watering_windows: processedData?.gardening_insights?.optimal_watering_windows?.length || 0,
+        best_gardening_days: processedData?.weekly_summary?.best_gardening_days?.length || 0
+      });
+      
+      return processedData;
+    },
+    staleTime: 15 * 60 * 1000, // 15 minutes - agricultural data changes less frequently
+    refetchInterval: 60 * 60 * 1000, // 60 minutes
+  });
+}
+
+// Enhanced Activity Suggestions with Agricultural Intelligence
+export function useSmartActivitySuggestions() {
+  const { 
+    currentLocation,
+    forecast,
+    airQuality,
+    setSuggestions,
+    setSuggestionsLoading,
+    setSuggestionsError 
+  } = useWeatherStore();
+
+  const agriculturalData = useAgriculturalForecast();
+  const currentAqi = airQuality?.list?.[0]?.main?.aqi ?? 1;
+
+  // Check if forecast and air quality data match current location
+  const forecastMatchesLocation = forecast && currentLocation && 
+    Math.abs(forecast.city.coord.lat - currentLocation.lat) < 0.01 &&
+    Math.abs(forecast.city.coord.lon - currentLocation.lon) < 0.01;
+  
+  const airQualityMatchesLocation = airQuality && currentLocation &&
+    Math.abs(airQuality.coord.lat - currentLocation.lat) < 0.01 &&
+    Math.abs(airQuality.coord.lon - currentLocation.lon) < 0.01;
+  
+  const allDataMatches = Boolean(currentLocation && forecastMatchesLocation && airQualityMatchesLocation);
+
+  // Enable as soon as we have location and basic weather data
+  const shouldEnable = Boolean(currentLocation && forecast);
+  
+
+  return useQuery({
+    queryKey: currentLocation ? 
+      [
+        'suggestions', 
+        'smart-activities', 
+        currentLocation.lat, 
+        currentLocation.lon, 
+        Math.floor(Date.now() / (10 * 60 * 1000)), // Round to 10-minute intervals
+        agriculturalData.data ? 'with-agri' : 'no-agri'
+      ] as const : 
+      ['suggestions', 'smart-activities', 'disabled'] as const,
+    queryFn: async () => {
+      console.log("🌱 DEBUG: GENERATING Smart Agricultural Activities for:", currentLocation?.name, "with agri data:", !!agriculturalData.data);
+      
+      if (!forecast) throw new Error('No forecast data available');
+      setSuggestionsLoading(true);
+      try {
+        const suggestions = suggestActivitiesFromForecast(
+          forecast,
+          currentAqi,
+          [], // TODO: Add AQI history
+          new Date().toISOString(),
+          agriculturalData.data || undefined,
+          currentLocation?.name || undefined
+        );
+        console.log("🌱 Generated", suggestions.smart_suggestions?.length || 0, "smart activities for", currentLocation?.name);
+        setSuggestions(suggestions);
+        return suggestions;
+      } catch (error) {
+        console.error("🌱 Smart Agricultural Activities generation failed:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate smart suggestions';
+        setSuggestionsError(errorMessage);
+        throw error;
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    },
+    enabled: shouldEnable,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 15 * 60 * 1000, // 15 minutes
   });
 }
 

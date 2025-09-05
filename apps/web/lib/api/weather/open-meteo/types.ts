@@ -138,3 +138,87 @@ export interface SolarForecast {
   photography_score: number; // 0-100
   solar_energy_score: number; // 0-100
 };
+
+// Open-Meteo Agricultural response (professional farming data worldwide)
+export interface OpenMeteoAgriculturalResponse {
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  hourly_units: {
+    time: string;
+    vapour_pressure_deficit: string;
+    relative_humidity_2m: string;
+    dew_point_2m: string;
+  };
+  hourly: {
+    time: string[];
+    vapour_pressure_deficit: number[]; // kPa
+    relative_humidity_2m: number[];    // %
+    dew_point_2m: number[];           // °C
+  };
+  daily_units: {
+    time: string;
+    et0_fao_evapotranspiration: string;
+    precipitation_hours: string;
+  };
+  daily: {
+    time: string[];
+    et0_fao_evapotranspiration: number[]; // mm
+    precipitation_hours: number[];        // hours
+  };
+}
+
+// Processed agricultural data for smart outdoor recommendations
+export interface AgriculturalTiming {
+  time: string;
+  vapour_pressure_deficit: number; // kPa - water stress indicator
+  relative_humidity: number;       // % - air moisture
+  dew_point: number;              // °C - condensation point
+  plant_stress_level: 'low' | 'moderate' | 'high';
+  watering_efficiency: number;    // 0-100 score
+  comfort_index: number;          // 0-100 human comfort
+}
+
+export interface DailyAgriculturalData {
+  date: string;
+  et0_evapotranspiration: number; // mm - water demand
+  precipitation_hours: number;    // hours - rain duration
+  water_demand_level: 'low' | 'moderate' | 'high';
+  irrigation_recommendation: string;
+}
+
+export interface AgriculturalForecast {
+  current: AgriculturalTiming | null;
+  hourly: AgriculturalTiming[];
+  daily: DailyAgriculturalData[];
+  gardening_insights: {
+    optimal_watering_windows: Array<{
+      start: string;
+      end: string;
+      efficiency_score: number;
+      reason: string;
+    }>;
+    plant_stress_warnings: Array<{
+      time: string;
+      severity: 'moderate' | 'high';
+      message: string;
+    }>;
+    outdoor_comfort_periods: Array<{
+      start: string;
+      end: string;
+      comfort_score: number;
+      description: string;
+    }>;
+  };
+  weekly_summary: {
+    avg_vpd: number;
+    total_et0: number;
+    rain_hours: number;
+    irrigation_needed: boolean;
+    best_gardening_days: string[];
+  };
+};

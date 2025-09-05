@@ -13,3 +13,13 @@ export type {
   SolarTiming,
   DayInfo
 } from './types';
+
+// Agricultural exports
+export { getAgriculturalData, processAgriculturalData } from './agricultural';
+export type { AgriculturalDataParams } from './agricultural';
+export type {
+  OpenMeteoAgriculturalResponse,
+  AgriculturalForecast,
+  AgriculturalTiming,
+  DailyAgriculturalData
+} from './types';

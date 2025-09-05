@@ -159,12 +159,29 @@ function generatePlanningAlerts(
   return [...weatherAlerts, ...airAlerts];
 }
 
+// Enhanced suggestions with agricultural intelligence
+import type { AgriculturalForecast } from '../api/weather/open-meteo';
+import { generateAgriculturalSuggestions } from './agricultural';
+
+// Helper function to generate proper end times (2-3 hours from start)
+function generateEndTime(startTime: string): string {
+  const start = new Date(startTime);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
+  return end.toISOString();
+}
+
+export interface EnhancedSuggestionResult extends SuggestionResult {
+  smart_suggestions?: import('@repo/ui').SmartActivitySuggestion[];
+}
+
 export function suggestActivitiesFromForecast(
   forecast: ForecastResponse,
   aqi: number, // Assume AQI is provided externally for now
   aqiHistory: number[] = [],
   time: string = "",
-): SuggestionResult {
+  agriculturalForecast?: AgriculturalForecast,
+  locationName?: string,
+): EnhancedSuggestionResult {
   const suggestions: ActivitySuggestion[] = [];
   const list = forecast.list;
 
@@ -218,7 +235,7 @@ export function suggestActivitiesFromForecast(
         end:
           nextItem && typeof nextItem.dt_txt === "string"
             ? nextItem.dt_txt
-            : (item.dt_txt ?? ""),
+            : generateEndTime(item.dt_txt ?? ""),
       });
     }
 
@@ -275,7 +292,7 @@ export function suggestActivitiesFromForecast(
         end:
           nextItem && typeof nextItem.dt_txt === "string"
             ? nextItem.dt_txt
-            : (item.dt_txt ?? ""),
+            : generateEndTime(item.dt_txt ?? ""),
       });
     }
 
@@ -291,7 +308,7 @@ export function suggestActivitiesFromForecast(
         end:
           nextItem && typeof nextItem.dt_txt === "string"
             ? nextItem.dt_txt
-            : (item.dt_txt ?? ""),
+            : generateEndTime(item.dt_txt ?? ""),
       });
     }
   }
@@ -312,14 +329,33 @@ export function suggestActivitiesFromForecast(
         end:
           nextItem && typeof nextItem.dt_txt === "string"
             ? nextItem.dt_txt
-            : (curr.dt_txt ?? ""),
+            : generateEndTime(curr.dt_txt ?? ""),
       });
     }
   }
+
+  // Generate agricultural suggestions if data is available
+  let smartSuggestions;
+  if (agriculturalForecast && locationName) {
+    try {
+      smartSuggestions = generateAgriculturalSuggestions({
+        current_time: time,
+        location_name: locationName,
+        agricultural_forecast: agriculturalForecast
+      });
+    } catch (error) {
+      console.warn('Failed to generate agricultural suggestions:', error);
+      smartSuggestions = [];
+    }
+  }
+
+  // Debug the first few regular suggestions
+  console.log("🎯 REGULAR SUGGESTIONS:", suggestions.slice(0, 3).map(s => `${s.activity}: ${new Date(s.start).toLocaleTimeString()} - ${new Date(s.end).toLocaleTimeString()}`));
 
   return {
     suggestions,
     alerts: generatePlanningAlerts(forecast, aqiHistory, aqi, time),
     forecast: list,
+    smart_suggestions: smartSuggestions,
   };
 }
