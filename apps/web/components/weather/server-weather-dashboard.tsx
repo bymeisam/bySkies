@@ -5,14 +5,17 @@ import { motion } from "framer-motion";
 import {
   PremiumForecastCard,
   PremiumWeatherCard,
+  SolarUVCard,
 } from "@repo/ui";
 import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
+import type { SolarForecast } from "@/lib/api/weather/open-meteo/types";
 
 interface ServerWeatherDashboardProps {
   currentWeather: CurrentWeatherResponse | null;
   forecast: ForecastResponse | null;
   extendedForecast?: ForecastResponse | null;
   airQuality?: AirPollutionResponse | null;
+  solarForecast?: SolarForecast | null;
   error?: string;
 }
 
@@ -21,6 +24,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
   forecast,
   extendedForecast,
   airQuality,
+  solarForecast,
   error
 }) => {
   const containerVariants = {
@@ -130,6 +134,14 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
               />
             </motion.div>
           )}
+
+          {/* Solar & UV Intelligence Card */}
+          <motion.div variants={itemVariants}>
+            <SolarUVCard
+              solarForecast={solarForecast || null}
+              isLoading={false}
+            />
+          </motion.div>
         </div>
       </div>
     </motion.div>

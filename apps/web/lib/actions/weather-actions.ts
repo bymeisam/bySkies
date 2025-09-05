@@ -1,8 +1,10 @@
 "use server";
 
 import { getForecast, getCurrentWeather, getExtendedForecast, getAirPollution } from "@/lib/api/weather";
+import { getSolarWeatherData } from "@/lib/api/weather/open-meteo";
 import { unstable_cache } from "next/cache";
 import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
+import type { SolarForecast } from "@/lib/api/weather/open-meteo/types";
 
 export interface ForecastResult {
   success: boolean;
@@ -25,6 +27,12 @@ export interface ExtendedForecastResult {
 export interface AirQualityResult {
   success: boolean;
   data?: AirPollutionResponse;
+  error?: string;
+}
+
+export interface SolarForecastResult {
+  success: boolean;
+  data?: SolarForecast;
   error?: string;
 }
 
@@ -117,5 +125,40 @@ export const getAirQualityAction = unstable_cache(
   {
     revalidate: 10 * 60, // 10 minutes cache (air quality updates more frequently than forecast)
     tags: ['weather', 'air-quality']
+  }
+);
+
+export const getSolarForecastAction = unstable_cache(
+  async (lat: number, lon: number): Promise<SolarForecastResult> => {
+    try {
+      console.log("☀️ Fetching solar & UV data for server action at", lat, lon);
+      const solarData = await getSolarWeatherData(lat, lon);
+      
+      if (solarData) {
+        console.log("☀️ Solar data received:", {
+          current_uv: solarData.uv_warnings.current_uv || 0,
+          peak_uv: solarData.uv_warnings.peak_uv_today || 0,
+          photography_score: solarData.photography_score || 0,
+          solar_energy_score: solarData.solar_energy_score || 0,
+          next_golden_hour: solarData.next_golden_hour?.minutes_until || 'none'
+        });
+      }
+      
+      return {
+        success: true,
+        data: solarData || undefined
+      };
+    } catch (error) {
+      console.error('Failed to fetch solar forecast:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch solar forecast'
+      };
+    }
+  },
+  ['weather-solar'],
+  {
+    revalidate: 10 * 60, // 10 minutes cache - solar data changes more slowly
+    tags: ['weather', 'solar']
   }
 );

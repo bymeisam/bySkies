@@ -16,7 +16,6 @@ import {
   useWeatherStore,
   useLocationSearch,
   useGeolocation,
-  useSolarForecast,
   useSmartActivitySuggestions,
   useAgriculturalForecast,
 } from "@/lib/hooks/use-weather";
@@ -37,7 +36,7 @@ const WeatherDashboard: React.FC = () => {
     canShowSuggestions,
   } = useWeatherStore();
 
-  const solarForecastQuery = useSolarForecast();
+  // REMOVED: useSolarForecast hook - replaced by server action in forecast page
   const smartSuggestionsQuery = useSmartActivitySuggestions();
   const agriculturalForecastQuery = useAgriculturalForecast();
   console.log({ smartSuggestionsQuery });
@@ -72,13 +71,13 @@ const WeatherDashboard: React.FC = () => {
     useWeatherStore.getState().setLocation(location);
 
     // Invalidate all weather queries to refetch with new location
-    console.log("🔄 Invalidating weather, suggestion, and solar queries...");
+    console.log("🔄 Invalidating weather, suggestion queries...");
     queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.invalidateQueries({
       queryKey: ["weather", "extended-forecast"],
     });
-    queryClient.invalidateQueries({ queryKey: ["weather", "solar"] });
+    // REMOVED: solar query invalidation - now handled by server actions
     queryClient.invalidateQueries({ queryKey: ["weather", "agricultural"] });
     queryClient.invalidateQueries({
       queryKey: ["suggestions", "smart-activities"],
@@ -89,7 +88,7 @@ const WeatherDashboard: React.FC = () => {
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.refetchQueries({ queryKey: ["weather", "extended-forecast"] });
-    queryClient.refetchQueries({ queryKey: ["weather", "solar"] });
+    // REMOVED: solar query refetch - now handled by server actions
     queryClient.refetchQueries({ queryKey: ["weather", "agricultural"] });
     queryClient.refetchQueries({
       queryKey: ["suggestions", "smart-activities"],
@@ -312,8 +311,8 @@ const WeatherDashboard: React.FC = () => {
             {/* Solar & UV Intelligence Card */}
             <motion.div variants={itemVariants}>
               <SolarUVCard
-                solarForecast={solarForecastQuery.data || null}
-                isLoading={solarForecastQuery.isLoading}
+                solarForecast={null}
+                isLoading={true}
               />
             </motion.div>
 
