@@ -1,4 +1,4 @@
-import { getForecastAction, getCurrentWeatherAction, getExtendedForecastAction, getAirQualityAction, getSolarForecastAction } from "@/lib/actions/weather-actions";
+import { getForecastAction, getCurrentWeatherAction, getExtendedForecastAction, getAirQualityAction, getSolarForecastAction, getAgriculturalForecastAction, getSmartActivitySuggestionsAction } from "@/lib/actions/weather-actions";
 import ServerWeatherDashboard from "@/components/weather/server-weather-dashboard";
 import { Suspense } from "react";
 
@@ -39,13 +39,15 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
     );
   }
 
-  // Fetch current weather, forecast, extended forecast, air quality, and solar data using server actions
-  const [currentWeatherResult, forecastResult, extendedForecastResult, airQualityResult, solarForecastResult] = await Promise.all([
+  // Fetch all weather data using server actions
+  const [currentWeatherResult, forecastResult, extendedForecastResult, airQualityResult, solarForecastResult, agriculturalForecastResult, smartSuggestionsResult] = await Promise.all([
     getCurrentWeatherAction(lat, lon, units),
     getForecastAction(lat, lon, units),
     getExtendedForecastAction(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`),
     getAirQualityAction(lat, lon),
-    getSolarForecastAction(lat, lon)
+    getSolarForecastAction(lat, lon),
+    getAgriculturalForecastAction(lat, lon),
+    getSmartActivitySuggestionsAction(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`)
   ]);
 
   // Combine any errors
@@ -65,6 +67,12 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
   if (!solarForecastResult.success && solarForecastResult.error) {
     errors.push(`Solar Forecast: ${solarForecastResult.error}`);
   }
+  if (!agriculturalForecastResult.success && agriculturalForecastResult.error) {
+    errors.push(`Agricultural Forecast: ${agriculturalForecastResult.error}`);
+  }
+  if (!smartSuggestionsResult.success && smartSuggestionsResult.error) {
+    errors.push(`Smart Suggestions: ${smartSuggestionsResult.error}`);
+  }
 
   return (
     <Suspense fallback={<ForecastLoading />}>
@@ -74,6 +82,8 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
         extendedForecast={extendedForecastResult.success ? extendedForecastResult.data || null : null}
         airQuality={airQualityResult.success ? airQualityResult.data || null : null}
         solarForecast={solarForecastResult.success ? solarForecastResult.data || null : null}
+        agriculturalForecast={agriculturalForecastResult.success ? agriculturalForecastResult.data || null : null}
+        smartSuggestions={smartSuggestionsResult.success ? smartSuggestionsResult.data || null : null}
         error={errors.length > 0 ? errors.join(', ') : undefined}
       />
     </Suspense>

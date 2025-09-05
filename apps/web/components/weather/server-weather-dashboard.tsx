@@ -6,9 +6,11 @@ import {
   PremiumForecastCard,
   PremiumWeatherCard,
   SolarUVCard,
+  SmartActivityCard,
 } from "@repo/ui";
 import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
-import type { SolarForecast } from "@/lib/api/weather/open-meteo/types";
+import type { SolarForecast, AgriculturalForecast } from "@/lib/api/weather/open-meteo/types";
+import type { EnhancedSuggestionResult } from "@/lib/suggestions";
 
 interface ServerWeatherDashboardProps {
   currentWeather: CurrentWeatherResponse | null;
@@ -16,6 +18,8 @@ interface ServerWeatherDashboardProps {
   extendedForecast?: ForecastResponse | null;
   airQuality?: AirPollutionResponse | null;
   solarForecast?: SolarForecast | null;
+  agriculturalForecast?: AgriculturalForecast | null;
+  smartSuggestions?: EnhancedSuggestionResult | null;
   error?: string;
 }
 
@@ -25,6 +29,8 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
   extendedForecast,
   airQuality,
   solarForecast,
+  agriculturalForecast,
+  smartSuggestions,
   error
 }) => {
   const containerVariants = {
@@ -140,6 +146,19 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
             <SolarUVCard
               solarForecast={solarForecast || null}
               isLoading={false}
+            />
+          </motion.div>
+
+          {/* Smart Agricultural Activities Card */}
+          <motion.div variants={itemVariants}>
+            <SmartActivityCard
+              suggestions={smartSuggestions?.smart_suggestions || []}
+              isLoading={false}
+              locationName={currentWeather?.name || forecast?.city.name || 'Unknown Location'}
+              timezone={currentWeather?.timezone}
+              optimalGardeningDays={
+                agriculturalForecast?.weekly_summary?.best_gardening_days?.length || 0
+              }
             />
           </motion.div>
         </div>

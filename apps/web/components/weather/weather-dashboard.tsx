@@ -16,8 +16,6 @@ import {
   useWeatherStore,
   useLocationSearch,
   useGeolocation,
-  useSmartActivitySuggestions,
-  useAgriculturalForecast,
 } from "@/lib/hooks/use-weather";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query/query-client";
@@ -36,10 +34,8 @@ const WeatherDashboard: React.FC = () => {
     canShowSuggestions,
   } = useWeatherStore();
 
-  // REMOVED: useSolarForecast hook - replaced by server action in forecast page
-  const smartSuggestionsQuery = useSmartActivitySuggestions();
-  const agriculturalForecastQuery = useAgriculturalForecast();
-  console.log({ smartSuggestionsQuery });
+  // REMOVED: useSolarForecast, useSmartActivitySuggestions, useAgriculturalForecast hooks
+  // All replaced by server actions in forecast page
   const locationSearch = useLocationSearch();
   const geolocation = useGeolocation();
   const queryClient = useQueryClient();
@@ -78,10 +74,7 @@ const WeatherDashboard: React.FC = () => {
       queryKey: ["weather", "extended-forecast"],
     });
     // REMOVED: solar query invalidation - now handled by server actions
-    queryClient.invalidateQueries({ queryKey: ["weather", "agricultural"] });
-    queryClient.invalidateQueries({
-      queryKey: ["suggestions", "smart-activities"],
-    });
+    // REMOVED: agricultural and smart-activities query invalidation - now handled by server actions
 
     // Force refetch all queries immediately
     console.log("🚀 Force refetching all queries...");
@@ -89,10 +82,7 @@ const WeatherDashboard: React.FC = () => {
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.refetchQueries({ queryKey: ["weather", "extended-forecast"] });
     // REMOVED: solar query refetch - now handled by server actions
-    queryClient.refetchQueries({ queryKey: ["weather", "agricultural"] });
-    queryClient.refetchQueries({
-      queryKey: ["suggestions", "smart-activities"],
-    });
+    // REMOVED: agricultural and smart-activities query refetch - now handled by server actions
 
     // Log state after brief delay to see what happened
     setTimeout(() => {
@@ -104,8 +94,7 @@ const WeatherDashboard: React.FC = () => {
         hasAirQuality: !!state.airQuality,
         hasSuggestions: state.suggestions.length > 0,
         canShowSuggestions: state.canShowSuggestions(),
-        smartSuggestionsLoading: smartSuggestionsQuery.isLoading,
-        agriculturalLoading: agriculturalForecastQuery.isLoading,
+        // REMOVED: smart suggestions and agricultural loading states - now server-side
       });
     }, 2000);
 
@@ -320,19 +309,11 @@ const WeatherDashboard: React.FC = () => {
             {currentLocation && (
               <motion.div variants={itemVariants}>
                 <SmartActivityCard
-                  suggestions={
-                    smartSuggestionsQuery.data?.smart_suggestions || []
-                  }
-                  isLoading={
-                    smartSuggestionsQuery.isLoading ||
-                    agriculturalForecastQuery.isLoading
-                  }
+                  suggestions={[]}
+                  isLoading={true}
                   locationName={currentLocation?.name}
                   timezone={currentWeather?.timezone}
-                  optimalGardeningDays={
-                    agriculturalForecastQuery.data?.weekly_summary
-                      ?.best_gardening_days?.length || 0
-                  }
+                  optimalGardeningDays={0}
                 />
               </motion.div>
             )}
