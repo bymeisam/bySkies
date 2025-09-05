@@ -1,6 +1,6 @@
 "use server";
 
-import { getForecast, getCurrentWeather } from "@/lib/api/weather";
+import { getForecast, getCurrentWeather, getExtendedForecast } from "@/lib/api/weather";
 import { unstable_cache } from "next/cache";
 import type { ForecastResponse, CurrentWeatherResponse } from "@repo/types";
 
@@ -13,6 +13,12 @@ export interface ForecastResult {
 export interface CurrentWeatherResult {
   success: boolean;
   data?: CurrentWeatherResponse;
+  error?: string;
+}
+
+export interface ExtendedForecastResult {
+  success: boolean;
+  data?: ForecastResponse;
   error?: string;
 }
 
@@ -59,5 +65,28 @@ export const getForecastAction = unstable_cache(
   {
     revalidate: 15 * 60, // 15 minutes cache
     tags: ['weather', 'forecast']
+  }
+);
+
+export const getExtendedForecastAction = unstable_cache(
+  async (lat: number, lon: number, locationName?: string): Promise<ExtendedForecastResult> => {
+    try {
+      const extendedForecast = await getExtendedForecast(lat, lon, locationName);
+      return {
+        success: true,
+        data: extendedForecast || undefined // Convert null to undefined for cleaner API
+      };
+    } catch (error) {
+      console.error('Failed to fetch extended forecast:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch extended forecast'
+      };
+    }
+  },
+  ['weather-extended-forecast'],
+  {
+    revalidate: 30 * 60, // 30 minutes cache (extended forecast changes less frequently)
+    tags: ['weather', 'extended-forecast']
   }
 );

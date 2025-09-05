@@ -11,12 +11,14 @@ import type { ForecastResponse, CurrentWeatherResponse } from "@repo/types";
 interface ServerWeatherDashboardProps {
   currentWeather: CurrentWeatherResponse | null;
   forecast: ForecastResponse | null;
+  extendedForecast?: ForecastResponse | null;
   error?: string;
 }
 
 const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
   currentWeather,
   forecast,
+  extendedForecast,
   error
 }) => {
   const containerVariants = {
@@ -117,11 +119,12 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
             <motion.div variants={itemVariants}>
               <PremiumForecastCard
                 forecast={forecast}
-                extendedForecast={null}
+                extendedForecast={extendedForecast}
                 isLoading={false}
-                error={null}
-                onToggleExtended={() => {}}
-                useExtended={false}
+                onExtendedToggle={(enabled) => {
+                  // Server-side component can't handle state changes
+                  console.log(`Extended forecast ${enabled ? 'enabled' : 'disabled'}`);
+                }}
               />
             </motion.div>
           )}

@@ -7,7 +7,7 @@ import {
   getAirPollution,
   searchLocations,
   getLocationName,
-  getExtendedForecast
+  getExtendedForecast // Still used by useExtendedForecast hook (legacy client-side)
 } from '../api/weather';
 import { getSolarWeatherData, getAgriculturalData, processAgriculturalData } from '../api/weather/open-meteo';
 import { suggestActivitiesFromForecast } from '../suggestions';
@@ -55,7 +55,9 @@ export function useForecast() {
   });
 }
 
-// Extended Forecast Hook (16-day Open-Meteo)
+// DEPRECATED: useExtendedForecast() hook - replaced by getExtendedForecastAction() server action
+// See /lib/actions/weather-actions.ts for the new server-side implementation
+// Extended Forecast Hook (16-day Open-Meteo) - LEGACY CLIENT-SIDE VERSION
 export function useExtendedForecast() {
   const { currentLocation } = useWeatherStore();
 
