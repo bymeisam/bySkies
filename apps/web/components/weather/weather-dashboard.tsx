@@ -14,7 +14,6 @@ import {
 } from "@repo/ui";
 import {
   useWeatherStore,
-  useCurrentWeather,
   useExtendedForecast,
   useAirQuality,
   useLocationSearch,
@@ -40,8 +39,6 @@ const WeatherDashboard: React.FC = () => {
     canShowSuggestions,
   } = useWeatherStore();
 
-  // API hooks
-  const weatherQuery = useCurrentWeather();
   const extendedForecastQuery = useExtendedForecast();
   const airQualityQuery = useAirQuality();
   const solarForecastQuery = useSolarForecast();
@@ -149,13 +146,6 @@ const WeatherDashboard: React.FC = () => {
       },
     });
   };
-
-  // Show error toasts for API failures
-  useEffect(() => {
-    if (weatherQuery.error) {
-      toast.error("Failed to load weather data");
-    }
-  }, [weatherQuery.error]);
 
   useEffect(() => {
     if (airQualityQuery.error) {

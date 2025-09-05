@@ -3,7 +3,6 @@ import { useWeatherStore } from '../store/weather-store';
 export { useWeatherStore };
 import { queryKeys } from '../query/query-client';
 import { 
-  getCurrentWeather,
   getForecast,
   getAirPollution,
   searchLocations,
@@ -14,44 +13,8 @@ import { getSolarWeatherData, getAgriculturalData, processAgriculturalData } fro
 import { suggestActivitiesFromForecast } from '../suggestions';
 import type { Location } from '../store/weather-store';
 
-// Current Weather Hook
-export function useCurrentWeather() {
-  const { 
-    currentLocation, 
-    units,
-    setCurrentWeather,
-    setWeatherLoading,
-    setWeatherError 
-  } = useWeatherStore();
-
-  return useQuery({
-    queryKey: currentLocation ? 
-      queryKeys.weather.current(currentLocation.lat, currentLocation.lon, units) : 
-      ['weather', 'current', 'disabled'] as const,
-    enabled: Boolean(currentLocation),
-    queryFn: async () => {
-      if (!currentLocation) throw new Error('No location available');
-      setWeatherLoading(true);
-      try {
-        const weather = await getCurrentWeather(
-          currentLocation.lat, 
-          currentLocation.lon, 
-          units
-        );
-        setCurrentWeather(weather);
-        return weather;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weather';
-        setWeatherError(errorMessage);
-        throw error;
-      } finally {
-        setWeatherLoading(false);
-      }
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 10 * 60 * 1000, // 10 minutes
-  });
-}
+// REMOVED: useCurrentWeather() hook - replaced by getCurrentWeatherAction() server action
+// See /lib/actions/weather-actions.ts for the new server-side implementation
 
 // Forecast Hook
 export function useForecast() {
@@ -469,28 +432,5 @@ export function useSmartActivitySuggestions() {
   });
 }
 
-// Composite hook to fetch all weather data
-export function useWeatherData() {
-  const weather = useCurrentWeather();
-  const forecast = useForecast();
-  const extendedForecast = useExtendedForecast();
-  const airQuality = useAirQuality();
-  const suggestions = useActivitySuggestions();
-
-  return {
-    weather,
-    forecast,
-    extendedForecast,
-    airQuality,
-    suggestions,
-    isLoading: weather.isLoading || forecast.isLoading || airQuality.isLoading,
-    isError: weather.isError || forecast.isError || airQuality.isError,
-    refetchAll: () => {
-      weather.refetch();
-      forecast.refetch();
-      extendedForecast.refetch();
-      airQuality.refetch();
-      suggestions.refetch();
-    },
-  };
-}
+// REMOVED: useWeatherData() composite hook - no longer needed
+// Individual hooks can be used directly, or replaced by server actions
