@@ -1,4 +1,4 @@
-import { getForecastAction, getCurrentWeatherAction, getExtendedForecastAction } from "@/lib/actions/weather-actions";
+import { getForecastAction, getCurrentWeatherAction, getExtendedForecastAction, getAirQualityAction } from "@/lib/actions/weather-actions";
 import ServerWeatherDashboard from "@/components/weather/server-weather-dashboard";
 import { Suspense } from "react";
 
@@ -39,11 +39,12 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
     );
   }
 
-  // Fetch current weather, forecast, and extended forecast data using server actions
-  const [currentWeatherResult, forecastResult, extendedForecastResult] = await Promise.all([
+  // Fetch current weather, forecast, extended forecast, and air quality data using server actions
+  const [currentWeatherResult, forecastResult, extendedForecastResult, airQualityResult] = await Promise.all([
     getCurrentWeatherAction(lat, lon, units),
     getForecastAction(lat, lon, units),
-    getExtendedForecastAction(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`)
+    getExtendedForecastAction(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`),
+    getAirQualityAction(lat, lon)
   ]);
 
   // Combine any errors
@@ -57,6 +58,9 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
   if (!extendedForecastResult.success && extendedForecastResult.error) {
     errors.push(`Extended Forecast: ${extendedForecastResult.error}`);
   }
+  if (!airQualityResult.success && airQualityResult.error) {
+    errors.push(`Air Quality: ${airQualityResult.error}`);
+  }
 
   return (
     <Suspense fallback={<ForecastLoading />}>
@@ -64,6 +68,7 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
         currentWeather={currentWeatherResult.success ? currentWeatherResult.data || null : null}
         forecast={forecastResult.success ? forecastResult.data || null : null}
         extendedForecast={extendedForecastResult.success ? extendedForecastResult.data || null : null}
+        airQuality={airQualityResult.success ? airQualityResult.data || null : null}
         error={errors.length > 0 ? errors.join(', ') : undefined}
       />
     </Suspense>

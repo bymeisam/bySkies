@@ -4,10 +4,8 @@ export { useWeatherStore };
 import { queryKeys } from '../query/query-client';
 import { 
   getForecast,
-  getAirPollution,
   searchLocations,
-  getLocationName,
-  getExtendedForecast // Still used by useExtendedForecast hook (legacy client-side)
+  getLocationName
 } from '../api/weather';
 import { getSolarWeatherData, getAgriculturalData, processAgriculturalData } from '../api/weather/open-meteo';
 import { suggestActivitiesFromForecast } from '../suggestions';
@@ -55,71 +53,11 @@ export function useForecast() {
   });
 }
 
-// DEPRECATED: useExtendedForecast() hook - replaced by getExtendedForecastAction() server action
+// REMOVED: useExtendedForecast() hook - replaced by getExtendedForecastAction() server action
 // See /lib/actions/weather-actions.ts for the new server-side implementation
-// Extended Forecast Hook (16-day Open-Meteo) - LEGACY CLIENT-SIDE VERSION
-export function useExtendedForecast() {
-  const { currentLocation } = useWeatherStore();
 
-  return useQuery({
-    queryKey: currentLocation ? 
-      ['weather', 'extended-forecast', currentLocation.lat, currentLocation.lon] as const : 
-      ['weather', 'extended-forecast', 'disabled'] as const,
-    queryFn: async () => {
-      if (!currentLocation) throw new Error('No location available');
-      return await getExtendedForecast(
-        currentLocation.lat, 
-        currentLocation.lon,
-        currentLocation.name
-      );
-    },
-    enabled: Boolean(currentLocation),
-    staleTime: 30 * 60 * 1000, // 30 minutes - extended forecast changes less frequently
-    refetchInterval: 60 * 60 * 1000, // 60 minutes
-    retry: (failureCount, error) => {
-      // Only retry network errors, not API errors
-      if (failureCount >= 2) return false;
-      return true;
-    },
-  });
-}
-
-// Air Quality Hook
-export function useAirQuality() {
-  const { 
-    currentLocation,
-    setAirQuality,
-    setAirQualityLoading,
-    setAirQualityError 
-  } = useWeatherStore();
-
-  return useQuery({
-    queryKey: currentLocation ? 
-      queryKeys.weather.airQuality(currentLocation.lat, currentLocation.lon) : 
-      ['weather', 'air-quality', 'disabled'] as const,
-    queryFn: async () => {
-      if (!currentLocation) throw new Error('No location available');
-      setAirQualityLoading(true);
-      try {
-        const airQuality = await getAirPollution(
-          currentLocation.lat, 
-          currentLocation.lon
-        );
-        setAirQuality(airQuality);
-        return airQuality;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch air quality';
-        setAirQualityError(errorMessage);
-        throw error;
-      } finally {
-        setAirQualityLoading(false);
-      }
-    },
-    enabled: Boolean(currentLocation),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    refetchInterval: 20 * 60 * 1000, // 20 minutes
-  });
-}
+// REMOVED: useAirQuality() hook - replaced by getAirQualityAction() server action
+// See /lib/actions/weather-actions.ts for the new server-side implementation
 
 // Activity Suggestions Hook
 export function useActivitySuggestions() {

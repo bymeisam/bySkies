@@ -1,8 +1,8 @@
 "use server";
 
-import { getForecast, getCurrentWeather, getExtendedForecast } from "@/lib/api/weather";
+import { getForecast, getCurrentWeather, getExtendedForecast, getAirPollution } from "@/lib/api/weather";
 import { unstable_cache } from "next/cache";
-import type { ForecastResponse, CurrentWeatherResponse } from "@repo/types";
+import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
 
 export interface ForecastResult {
   success: boolean;
@@ -19,6 +19,12 @@ export interface CurrentWeatherResult {
 export interface ExtendedForecastResult {
   success: boolean;
   data?: ForecastResponse;
+  error?: string;
+}
+
+export interface AirQualityResult {
+  success: boolean;
+  data?: AirPollutionResponse;
   error?: string;
 }
 
@@ -88,5 +94,28 @@ export const getExtendedForecastAction = unstable_cache(
   {
     revalidate: 30 * 60, // 30 minutes cache (extended forecast changes less frequently)
     tags: ['weather', 'extended-forecast']
+  }
+);
+
+export const getAirQualityAction = unstable_cache(
+  async (lat: number, lon: number): Promise<AirQualityResult> => {
+    try {
+      const airQuality = await getAirPollution(lat, lon);
+      return {
+        success: true,
+        data: airQuality
+      };
+    } catch (error) {
+      console.error('Failed to fetch air quality:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch air quality'
+      };
+    }
+  },
+  ['weather-air-quality'],
+  {
+    revalidate: 10 * 60, // 10 minutes cache (air quality updates more frequently than forecast)
+    tags: ['weather', 'air-quality']
   }
 );

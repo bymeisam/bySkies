@@ -14,8 +14,6 @@ import {
 } from "@repo/ui";
 import {
   useWeatherStore,
-  useExtendedForecast,
-  useAirQuality,
   useLocationSearch,
   useGeolocation,
   useSolarForecast,
@@ -39,8 +37,6 @@ const WeatherDashboard: React.FC = () => {
     canShowSuggestions,
   } = useWeatherStore();
 
-  const extendedForecastQuery = useExtendedForecast();
-  const airQualityQuery = useAirQuality();
   const solarForecastQuery = useSolarForecast();
   const smartSuggestionsQuery = useSmartActivitySuggestions();
   const agriculturalForecastQuery = useAgriculturalForecast();
@@ -147,11 +143,7 @@ const WeatherDashboard: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    if (airQualityQuery.error) {
-      toast.error("Failed to load air quality data");
-    }
-  }, [airQualityQuery.error]);
+  // REMOVED: airQuality error handling - now handled by server actions
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -353,12 +345,12 @@ const WeatherDashboard: React.FC = () => {
                 {/* 5-Day Forecast with 16-Day Toggle */}
                 <PremiumForecastCard
                   forecast={forecast}
-                  extendedForecast={extendedForecastQuery.data}
+                  extendedForecast={null}
                   isLoading={!forecast && isAnyLoading()}
                   onExtendedToggle={(enabled: boolean) => {
                     console.log(
                       enabled
-                        ? "🚀 Switched to 16-day forecast"
+                        ? "🚀 Switched to 16-day forecast (disabled in client-side version)"
                         : "🔙 Switched to 5-day forecast",
                     );
                   }}

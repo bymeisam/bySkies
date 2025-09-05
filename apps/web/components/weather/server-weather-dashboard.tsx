@@ -6,12 +6,13 @@ import {
   PremiumForecastCard,
   PremiumWeatherCard,
 } from "@repo/ui";
-import type { ForecastResponse, CurrentWeatherResponse } from "@repo/types";
+import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
 
 interface ServerWeatherDashboardProps {
   currentWeather: CurrentWeatherResponse | null;
   forecast: ForecastResponse | null;
   extendedForecast?: ForecastResponse | null;
+  airQuality?: AirPollutionResponse | null;
   error?: string;
 }
 
@@ -19,6 +20,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
   currentWeather,
   forecast,
   extendedForecast,
+  airQuality,
   error
 }) => {
   const containerVariants = {
@@ -106,7 +108,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
             <motion.div variants={itemVariants}>
               <PremiumWeatherCard
                 weather={currentWeather}
-                airQuality={null}
+                airQuality={airQuality}
                 alerts={[]}
                 isLoading={false}
                 error={null}
