@@ -1,23 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  useLocalStorage,
-  useDebounce,
-  useFocus,
-  useClickOutside,
-} from "@bymeisam/use";
+import { useLocalStorage, useClickOutside, useDebounce } from "@bymeisam/use";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  MapPin,
-  Search,
-  Loader2,
-  Navigation,
-  Globe,
-  X,
-  Clock,
-  Check,
-} from "lucide-react";
+import { MapPin, Loader2, Navigation } from "lucide-react";
+import { LocationInput } from "./location-input";
+import { LocationDropdown } from "./location-dropdown";
 
-interface LocationOption {
+export interface LocationOption {
   lat: number;
   lon: number;
   name: string;
@@ -27,10 +15,11 @@ interface LocationOption {
 }
 
 interface LocationSelectorProps {
-  currentLocation: LocationOption | null;
+  currentLocation?: LocationOption | null;
   onLocationSelect: (location: LocationOption) => void;
   onUseCurrentLocation: () => void;
-  onSearchLocations: (query: string) => Promise<LocationOption[]>;
+  onSearchQueryChange: (query: string) => void;
+  searchResults: LocationOption[];
   isGeolocationLoading?: boolean;
   isSearchLoading?: boolean;
   className?: string;
@@ -40,25 +29,23 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   currentLocation,
   onLocationSelect,
   onUseCurrentLocation,
-  onSearchLocations,
+  onSearchQueryChange,
+  searchResults,
   isGeolocationLoading = false,
   isSearchLoading = false,
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<LocationOption[]>([]);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [recentLocations, setRecentLocations] = useLocalStorage<
     LocationOption[]
   >("byskies-recent-locations", []);
-  const { ref: searchInputRef } = useFocus<HTMLInputElement>({
-    autoFocus: true,
-  });
   const clickOutsideRef = useClickOutside<HTMLDivElement>(() =>
     setIsOpen(false),
   );
-  const [] = useDebounce(searchQuery, 300);
 
+  console.log({ currentLocation });
   const saveToRecent = (location: LocationOption) => {
     setRecentLocations((prevLocations) =>
       [
@@ -68,25 +55,14 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     );
   };
 
-  // Handle search with debouncing
+  // Notify parent when debounced search query changes
   useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+    onSearchQueryChange(debouncedSearchQuery);
+  }, [debouncedSearchQuery, onSearchQueryChange]);
 
-    const searchTimeout = setTimeout(async () => {
-      try {
-        const results = await onSearchLocations(searchQuery);
-        setSearchResults(results);
-      } catch (error) {
-        console.error("Location search failed:", error);
-        setSearchResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(searchTimeout);
-  }, [searchQuery]); // Removed onSearchLocations from dependencies
+  const handleInputChange = (value: string) => {
+    setSearchQuery(value);
+  };
 
   // Handle location selection
   const handleLocationSelect = (location: LocationOption) => {
@@ -100,16 +76,6 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   const handleCurrentLocation = () => {
     onUseCurrentLocation();
     setIsOpen(false);
-  };
-
-  const formatLocationName = (location: LocationOption) => {
-    if (location.state && location.country) {
-      return `${location.name}, ${location.state}, ${location.country}`;
-    }
-    if (location.country) {
-      return `${location.name}, ${location.country}`;
-    }
-    return location.name;
   };
 
   return (
@@ -195,25 +161,11 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           >
             <div className="p-4 space-y-4 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
               {/* Search input */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for a city..."
-                  className="w-full pl-10 pr-10 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4 text-white/50" />
-                  </button>
-                )}
-              </div>
+              <LocationInput
+                value={searchQuery}
+                onValueChange={handleInputChange}
+                isShowing={isOpen}
+              />
 
               {/* Current location button */}
               <motion.button
@@ -235,97 +187,16 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                 </span>
               </motion.button>
 
-              {/* Search results */}
-              {isSearchLoading && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-white/50 animate-spin" />
-                </div>
-              )}
-
-              {searchResults.length > 0 && (
-                <div className="space-y-1">
-                  <div className="text-xs text-white/60 uppercase tracking-wide font-medium px-1">
-                    Search Results
-                  </div>
-                  {searchResults.map((location) => (
-                    <motion.button
-                      key={location.id}
-                      onClick={() => handleLocationSelect(location)}
-                      whileHover={{
-                        scale: 1.01,
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      }}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 text-left"
-                    >
-                      <Globe className="w-4 h-4 text-white/50 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">
-                          {location.name}
-                        </div>
-                        {(location.state || location.country) && (
-                          <div className="text-sm text-white/60 truncate">
-                            {location.state && `${location.state}, `}
-                            {location.country}
-                          </div>
-                        )}
-                      </div>
-                      {currentLocation?.id === location.id && (
-                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              )}
-
-              {/* Recent locations */}
-              {recentLocations.length > 0 && !searchQuery && (
-                <div className="space-y-1">
-                  <div className="text-xs text-white/60 uppercase tracking-wide font-medium px-1">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    Recent
-                  </div>
-                  {recentLocations.map((location) => (
-                    <motion.button
-                      key={location.id}
-                      onClick={() => handleLocationSelect(location)}
-                      whileHover={{
-                        scale: 1.01,
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      }}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 text-left"
-                    >
-                      <Clock className="w-4 h-4 text-white/50 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">
-                          {location.name}
-                        </div>
-                        {(location.state || location.country) && (
-                          <div className="text-sm text-white/60 truncate">
-                            {location.state && `${location.state}, `}
-                            {location.country}
-                          </div>
-                        )}
-                      </div>
-                      {currentLocation?.id === location.id && (
-                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              )}
-
-              {/* No results */}
-              {searchQuery &&
-                searchResults.length === 0 &&
-                !isSearchLoading && (
-                  <div className="text-center py-8 text-white/60">
-                    <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <div className="text-sm">No locations found</div>
-                    <div className="text-xs mt-1">
-                      Try a different search term
-                    </div>
-                  </div>
-                )}
+              {/* Location dropdown with search results and recent locations */}
+              <LocationDropdown
+                locations={searchResults}
+                recentLocations={recentLocations}
+                currentLocationId={currentLocation?.id}
+                onLocationSelect={handleLocationSelect}
+                isLoading={isSearchLoading}
+                showNoResults={searchQuery.length >= 2}
+                searchQuery={searchQuery}
+              />
             </div>
           </motion.div>
         )}

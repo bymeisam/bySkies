@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { PremiumWeatherMap, LocationSelector } from "@repo/ui";
-import { useLocationSearch } from "@/lib/hooks/use-weather";
+import { PremiumWeatherMap, LocationSelector, LocationOption } from "@repo/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query/query-client";
-import {
-  Position,
-  useGeolocationWithCache,
-} from "@/lib/hooks/useGeolocationWithCach";
-
+import { useGeolocationWithCache } from "@/lib/hooks/useGeolocationWithCach";
+import { searchLocations } from "@/lib/api/weather";
+import AnimatedBackground from "./animated-background";
+import Header from "./header";
+type Location = {
+  lat: number;
+  lon: number;
+  name: string;
+  id: string;
+};
 const WeatherDashboard: React.FC = () => {
-  const locationSearch = useLocationSearch();
   const {
     loading: geolocationLoading,
     error: geolocationError,
@@ -21,9 +24,21 @@ const WeatherDashboard: React.FC = () => {
     getPosition,
   } = useGeolocationWithCache();
   const queryClient = useQueryClient();
+  const [currentLocation, setCurrentLocation] = useState<LocationOption>();
+  const [searchResults, setSearchResults] = useState<
+    Array<{
+      lat: number;
+      lon: number;
+      name: string;
+      country?: string;
+      state?: string;
+      id: string;
+    }>
+  >([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   // Handle location selection
-  const handleLocationSelect = (location: Position) => {
+  const handleLocationSelect = (location: Location) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.invalidateQueries({
@@ -32,27 +47,46 @@ const WeatherDashboard: React.FC = () => {
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.refetchQueries({ queryKey: ["weather", "extended-forecast"] });
-
+    setCurrentLocation(location);
     toast.success(`Weather updated for ${location.name}`);
   };
 
-  // Handle search locations - memoized to prevent infinite loops
-  const handleSearchLocations = useCallback(
-    async (query: string) => {
-      try {
-        const results = await locationSearch.mutateAsync(query);
-        return results.map((loc) => ({
-          ...loc,
-          id: `${loc.lat}-${loc.lon}`,
-        }));
-      } catch (error) {
-        console.log({ error });
-        toast.error("Failed to search locations");
-        return [];
-      }
-    },
-    [locationSearch],
-  );
+  useEffect(() => {
+    if (location)
+      setCurrentLocation({
+        lat: location?.latitude || 0,
+        lon: location?.longitude || 0,
+        name: location?.name || "",
+        id: location ? `${location.latitude}-${location.longitude}` : "",
+      });
+  }, [location]);
+  // Handle search query changes
+  const handleSearchQueryChange = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setIsSearchLoading(true);
+      const results = await searchLocations(query, 5);
+      const mappedResults = results.map((loc) => ({
+        lat: loc.lat,
+        lon: loc.lon,
+        name: loc.name,
+        country: loc.country,
+        state: loc.state,
+        id: `${loc.lat}-${loc.lon}`,
+      }));
+      setSearchResults(mappedResults);
+    } catch (error) {
+      console.error("Location search failed:", error);
+      toast.error("Failed to search locations");
+      setSearchResults([]);
+    } finally {
+      setIsSearchLoading(false);
+    }
+  }, []);
 
   if (geolocationLoading) {
     return <div>Loading...</div>;
@@ -84,7 +118,6 @@ const WeatherDashboard: React.FC = () => {
       },
     },
   };
-
   return (
     <motion.div
       variants={containerVariants}
@@ -92,88 +125,19 @@ const WeatherDashboard: React.FC = () => {
       animate="visible"
       className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"
     >
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.1, 0.2, 0.1],
-            rotate: [0, 90, 180, 270, 360],
-          }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-600/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.05, 0.15, 0.05],
-            rotate: [360, 270, 180, 90, 0],
-          }}
-          transition={{
-            duration: 40,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-600/10 rounded-full blur-3xl"
-        />
-
-        {/* Floating particles */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: [-20, 20, -20],
-              x: [-10, 10, -10],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 1.5,
-            }}
-            className={`absolute w-2 h-2 bg-white/20 rounded-full blur-sm`}
-            style={{
-              left: `${20 + i * 15}%`,
-              top: `${30 + i * 10}%`,
-            }}
-          />
-        ))}
-      </div>
-
+      <AnimatedBackground />
+      <Header />
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <motion.div variants={itemVariants} className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent">
-              BySkies
-            </span>
-          </h1>
-          <p className="text-xl text-white/80 font-medium">
-            Your plans, guided by skies
-          </p>
-        </motion.div>
-
         {/* Location Selector */}
         <motion.div variants={itemVariants} className="max-w-md mx-auto mb-12">
           <LocationSelector
-            currentLocation={
-              location
-                ? {
-                    ...location,
-                    id: `${location.latitude}-${location.longitude}`,
-                  }
-                : null
-            }
+            currentLocation={currentLocation}
             onLocationSelect={handleLocationSelect}
             onUseCurrentLocation={getPosition}
-            onSearchLocations={handleSearchLocations}
+            onSearchQueryChange={handleSearchQueryChange}
+            searchResults={searchResults}
             isGeolocationLoading={geolocationLoading}
-            isSearchLoading={locationSearch.isPending}
+            isSearchLoading={isSearchLoading}
           />
         </motion.div>
 
