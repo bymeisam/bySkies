@@ -1,15 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MapPin, 
-  Search, 
-  Loader2, 
-  Navigation, 
+import React, { useState, useEffect } from "react";
+import {
+  useLocalStorage,
+  useDebounce,
+  useFocus,
+  useClickOutside,
+} from "@bymeisam/use";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MapPin,
+  Search,
+  Loader2,
+  Navigation,
   Globe,
   X,
   Clock,
-  Check
-} from 'lucide-react';
+  Check,
+} from "lucide-react";
 
 interface LocationOption {
   lat: number;
@@ -40,37 +46,26 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<LocationOption[]>([]);
-  const [recentLocations, setRecentLocations] = useState<LocationOption[]>([]);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [recentLocations, setRecentLocations] = useLocalStorage<
+    LocationOption[]
+  >("byskies-recent-locations", []);
+  const { ref: searchInputRef } = useFocus<HTMLInputElement>({
+    autoFocus: true,
+  });
+  const clickOutsideRef = useClickOutside<HTMLDivElement>(() =>
+    setIsOpen(false),
+  );
+  const [] = useDebounce(searchQuery, 300);
 
-  // Load recent locations from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('byskies-recent-locations');
-      if (stored) {
-        setRecentLocations(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Failed to load recent locations:', error);
-    }
-  }, []);
-
-  // Save to recent locations
   const saveToRecent = (location: LocationOption) => {
-    try {
-      const updated = [
+    setRecentLocations((prevLocations) =>
+      [
         location,
-        ...recentLocations.filter(loc => loc.id !== location.id)
-      ].slice(0, 5); // Keep only 5 recent locations
-      
-      setRecentLocations(updated);
-      localStorage.setItem('byskies-recent-locations', JSON.stringify(updated));
-    } catch (error) {
-      console.error('Failed to save recent location:', error);
-    }
+        ...prevLocations.filter((loc) => loc.id !== location.id),
+      ].slice(0, 5),
+    );
   };
 
   // Handle search with debouncing
@@ -85,7 +80,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
         const results = await onSearchLocations(searchQuery);
         setSearchResults(results);
       } catch (error) {
-        console.error('Location search failed:', error);
+        console.error("Location search failed:", error);
         setSearchResults([]);
       }
     }, 300);
@@ -98,7 +93,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     saveToRecent(location);
     onLocationSelect(location);
     setIsOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   // Handle current location
@@ -106,27 +101,6 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     onUseCurrentLocation();
     setIsOpen(false);
   };
-
-  // Focus search input when opened
-  useEffect(() => {
-    if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isOpen]);
-
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
 
   const formatLocationName = (location: LocationOption) => {
     if (location.state && location.country) {
@@ -139,16 +113,16 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   };
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={clickOutsideRef} className={`relative ${className}`}>
       {/* Current location button */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prevIsOpen) => !prevIsOpen)}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={`w-full flex items-center gap-3 bg-white/10 backdrop-blur-xl border rounded-2xl p-4 text-white transition-all duration-300 group ${
-          isOpen 
-            ? 'border-sky-400/50 shadow-lg shadow-sky-500/20' 
-            : 'border-white/20 hover:border-white/30'
+          isOpen
+            ? "border-sky-400/50 shadow-lg shadow-sky-500/20"
+            : "border-white/20 hover:border-white/30"
         }`}
         style={{
           boxShadow: `
@@ -161,7 +135,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
         <div className="p-2 bg-sky-400/20 rounded-xl border border-sky-400/30 group-hover:bg-sky-400/30 transition-colors flex items-center justify-center flex-shrink-0">
           <MapPin className="w-5 h-5 text-sky-300" />
         </div>
-        
+
         <div className="flex-1 text-left">
           {currentLocation ? (
             <div>
@@ -180,14 +154,24 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             </div>
           )}
         </div>
-        
+
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="flex-shrink-0"
         >
-          <svg className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <svg
+            className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </motion.div>
       </motion.button>
@@ -223,7 +207,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => setSearchQuery("")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4 text-white/50" />
@@ -245,7 +229,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                   <Navigation className="w-5 h-5 text-sky-300" />
                 )}
                 <span className="font-medium">
-                  {isGeolocationLoading ? 'Getting location...' : 'Use current location'}
+                  {isGeolocationLoading
+                    ? "Getting location..."
+                    : "Use current location"}
                 </span>
               </motion.button>
 
@@ -255,7 +241,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                   <Loader2 className="w-6 h-6 text-white/50 animate-spin" />
                 </div>
               )}
-              
+
               {searchResults.length > 0 && (
                 <div className="space-y-1">
                   <div className="text-xs text-white/60 uppercase tracking-wide font-medium px-1">
@@ -265,12 +251,17 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                     <motion.button
                       key={location.id}
                       onClick={() => handleLocationSelect(location)}
-                      whileHover={{ scale: 1.01, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                      whileHover={{
+                        scale: 1.01,
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      }}
                       className="w-full flex items-center gap-3 p-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 text-left"
                     >
                       <Globe className="w-4 h-4 text-white/50 flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{location.name}</div>
+                        <div className="font-medium truncate">
+                          {location.name}
+                        </div>
                         {(location.state || location.country) && (
                           <div className="text-sm text-white/60 truncate">
                             {location.state && `${location.state}, `}
@@ -297,12 +288,17 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                     <motion.button
                       key={location.id}
                       onClick={() => handleLocationSelect(location)}
-                      whileHover={{ scale: 1.01, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                      whileHover={{
+                        scale: 1.01,
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      }}
                       className="w-full flex items-center gap-3 p-3 rounded-xl text-white hover:bg-white/10 transition-all duration-200 text-left"
                     >
                       <Clock className="w-4 h-4 text-white/50 flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{location.name}</div>
+                        <div className="font-medium truncate">
+                          {location.name}
+                        </div>
                         {(location.state || location.country) && (
                           <div className="text-sm text-white/60 truncate">
                             {location.state && `${location.state}, `}
@@ -319,13 +315,17 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
               )}
 
               {/* No results */}
-              {searchQuery && searchResults.length === 0 && !isSearchLoading && (
-                <div className="text-center py-8 text-white/60">
-                  <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <div className="text-sm">No locations found</div>
-                  <div className="text-xs mt-1">Try a different search term</div>
-                </div>
-              )}
+              {searchQuery &&
+                searchResults.length === 0 &&
+                !isSearchLoading && (
+                  <div className="text-center py-8 text-white/60">
+                    <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <div className="text-sm">No locations found</div>
+                    <div className="text-xs mt-1">
+                      Try a different search term
+                    </div>
+                  </div>
+                )}
             </div>
           </motion.div>
         )}

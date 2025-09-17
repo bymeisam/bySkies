@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import {
   PremiumForecastCard,
   PremiumWeatherCard,
+  PremiumActivityCard,
   SolarUVCard,
   SmartActivityCard,
 } from "@repo/ui";
@@ -140,6 +141,16 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
               />
             </motion.div>
           )}
+
+          {/* Premium Activity Suggestions Card */}
+          <motion.div variants={itemVariants}>
+            <PremiumActivityCard
+              suggestions={smartSuggestions?.suggestions || []}
+              isLoading={false}
+              locationName={currentWeather?.name || forecast?.city.name || 'Unknown Location'}
+              timezone={currentWeather?.timezone}
+            />
+          </motion.div>
 
           {/* Solar & UV Intelligence Card */}
           <motion.div variants={itemVariants}>

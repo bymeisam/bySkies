@@ -1,102 +1,37 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import {
-  PremiumWeatherCard,
-  PremiumActivityCard,
-  PremiumForecastCard,
-  PremiumWeatherMap,
-  LocationSelector,
-  SolarUVCard,
-  SmartActivityCard,
-} from "@repo/ui";
-import {
-  useWeatherStore,
-  useLocationSearch,
-  useGeolocation,
-} from "@/lib/hooks/use-weather";
+import { PremiumWeatherMap, LocationSelector } from "@repo/ui";
+import { useLocationSearch } from "@/lib/hooks/use-weather";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query/query-client";
-import type { Location } from "@/lib/store/weather-store";
+import {
+  Position,
+  useGeolocationWithCache,
+} from "@/lib/hooks/useGeolocationWithCach";
 
 const WeatherDashboard: React.FC = () => {
-  const {
-    currentLocation,
-    currentWeather,
-    forecast,
-    airQuality,
-    suggestions,
-    alerts,
-    isAnyLoading,
-    hasAllData,
-    canShowSuggestions,
-  } = useWeatherStore();
-
-  // REMOVED: useSolarForecast, useSmartActivitySuggestions, useAgriculturalForecast hooks
-  // All replaced by server actions in forecast page
   const locationSearch = useLocationSearch();
-  const geolocation = useGeolocation();
+  const {
+    loading: geolocationLoading,
+    error: geolocationError,
+    location,
+    getPosition,
+  } = useGeolocationWithCache();
   const queryClient = useQueryClient();
 
-  // Auto-fetch location on mount if not set
-  useEffect(() => {
-    if (!currentLocation && !geolocation.isPending) {
-      // Try to get geolocation automatically on first visit
-      const hasAskedBefore = localStorage.getItem("byskies-geolocation-asked");
-      if (!hasAskedBefore) {
-        localStorage.setItem("byskies-geolocation-asked", "true");
-        geolocation.mutate();
-      }
-    }
-  }, [currentLocation, geolocation]);
-
   // Handle location selection
-  const handleLocationSelect = (location: Location) => {
-    console.log("🏙️ Location selected:", location.name);
-    console.log("📊 Store state before location change:", {
-      currentLocation: currentLocation?.name,
-      hasWeather: !!currentWeather,
-      hasForecast: !!forecast,
-      hasAirQuality: !!airQuality,
-      hasSuggestions: suggestions.length > 0,
-    });
-
-    // Set new location first
-    useWeatherStore.getState().setLocation(location);
-
-    // Invalidate all weather queries to refetch with new location
-    console.log("🔄 Invalidating weather, suggestion queries...");
+  const handleLocationSelect = (location: Position) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.invalidateQueries({
       queryKey: ["weather", "extended-forecast"],
     });
-    // REMOVED: solar query invalidation - now handled by server actions
-    // REMOVED: agricultural and smart-activities query invalidation - now handled by server actions
-
-    // Force refetch all queries immediately
-    console.log("🚀 Force refetching all queries...");
     queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
     queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
     queryClient.refetchQueries({ queryKey: ["weather", "extended-forecast"] });
-    // REMOVED: solar query refetch - now handled by server actions
-    // REMOVED: agricultural and smart-activities query refetch - now handled by server actions
-
-    // Log state after brief delay to see what happened
-    setTimeout(() => {
-      const state = useWeatherStore.getState();
-      console.log("📈 Store state after location change:", {
-        newLocation: state.currentLocation?.name,
-        hasWeather: !!state.currentWeather,
-        hasForecast: !!state.forecast,
-        hasAirQuality: !!state.airQuality,
-        hasSuggestions: state.suggestions.length > 0,
-        canShowSuggestions: state.canShowSuggestions(),
-        // REMOVED: smart suggestions and agricultural loading states - now server-side
-      });
-    }, 2000);
 
     toast.success(`Weather updated for ${location.name}`);
   };
@@ -119,19 +54,13 @@ const WeatherDashboard: React.FC = () => {
     [locationSearch],
   );
 
-  // Handle geolocation
-  const handleUseCurrentLocation = () => {
-    geolocation.mutate(undefined, {
-      onSuccess: (location) => {
-        toast.success(`Location set to ${location.name}`);
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    });
-  };
-
-  // REMOVED: airQuality error handling - now handled by server actions
+  if (geolocationLoading) {
+    return <div>Loading...</div>;
+  }
+  if (geolocationError) {
+    const error = geolocationError;
+    toast.error(error);
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -233,117 +162,31 @@ const WeatherDashboard: React.FC = () => {
         <motion.div variants={itemVariants} className="max-w-md mx-auto mb-12">
           <LocationSelector
             currentLocation={
-              currentLocation
+              location
                 ? {
-                    ...currentLocation,
-                    id: `${currentLocation.lat}-${currentLocation.lon}`,
+                    ...location,
+                    id: `${location.latitude}-${location.longitude}`,
                   }
                 : null
             }
             onLocationSelect={handleLocationSelect}
-            onUseCurrentLocation={handleUseCurrentLocation}
+            onUseCurrentLocation={getPosition}
             onSearchLocations={handleSearchLocations}
-            isGeolocationLoading={geolocation.isPending}
+            isGeolocationLoading={geolocationLoading}
             isSearchLoading={locationSearch.isPending}
           />
         </motion.div>
 
         {/* Main Content */}
-        {currentLocation && (
+        {location && (
           <div className="space-y-8">
-            {/* Weather and Activity Cards */}
-            <motion.div
-              variants={itemVariants}
-              className="grid gap-8 lg:grid-cols-2"
-            >
-              {/* Weather Card */}
-              <div>
-                {hasAllData() && currentWeather && airQuality ? (
-                  <PremiumWeatherCard
-                    weather={currentWeather}
-                    airQuality={airQuality}
-                    alerts={alerts}
-                    isLoading={false}
-                    locationName={currentLocation?.name}
-                  />
-                ) : (
-                  <PremiumWeatherCard
-                    weather={{} as any}
-                    airQuality={{} as any}
-                    alerts={[]}
-                    isLoading={true}
-                    locationName={currentLocation?.name}
-                  />
-                )}
-              </div>
-
-              {/* Activity Suggestions */}
-              <div>
-                {canShowSuggestions() ? (
-                  <PremiumActivityCard
-                    suggestions={suggestions}
-                    isLoading={false}
-                    locationName={currentLocation?.name}
-                    timezone={currentWeather?.timezone}
-                  />
-                ) : (
-                  <PremiumActivityCard
-                    suggestions={[]}
-                    isLoading={isAnyLoading()}
-                    locationName={currentLocation?.name}
-                    timezone={currentWeather?.timezone}
-                  />
-                )}
-              </div>
-            </motion.div>
-
-            {/* Solar & UV Intelligence Card */}
-            <motion.div variants={itemVariants}>
-              <SolarUVCard
-                solarForecast={null}
-                isLoading={true}
-              />
-            </motion.div>
-
-            {/* Smart Agricultural Activities Card */}
-            {currentLocation && (
-              <motion.div variants={itemVariants}>
-                <SmartActivityCard
-                  suggestions={[]}
-                  isLoading={true}
-                  locationName={currentLocation?.name}
-                  timezone={currentWeather?.timezone}
-                  optimalGardeningDays={0}
-                />
-              </motion.div>
-            )}
-
             {/* Additional Weather Info Cards */}
             <motion.div variants={itemVariants} className="space-y-8">
               {/* Top Row: 5-Day Forecast and Weather Map */}
               <div className="grid gap-6 lg:grid-cols-2">
-                {/* 5-Day Forecast with 16-Day Toggle */}
-                <PremiumForecastCard
-                  forecast={forecast}
-                  extendedForecast={null}
-                  isLoading={!forecast && isAnyLoading()}
-                  onExtendedToggle={(enabled: boolean) => {
-                    console.log(
-                      enabled
-                        ? "🚀 Switched to 16-day forecast (disabled in client-side version)"
-                        : "🔙 Switched to 5-day forecast",
-                    );
-                  }}
-                />
-
-                {/* Weather Map */}
                 <PremiumWeatherMap
-                  center={
-                    currentLocation
-                      ? [currentLocation.lat, currentLocation.lon]
-                      : [40.7128, -74.006]
-                  }
-                  isLoading={!currentLocation}
+                  center={[location.latitude, location.longitude]}
+                  isLoading={geolocationLoading}
                 />
               </div>
 
@@ -390,7 +233,7 @@ const WeatherDashboard: React.FC = () => {
         )}
 
         {/* Welcome state when no location is selected */}
-        {!currentLocation && !geolocation.isPending && (
+        {!location && !geolocationLoading && (
           <motion.div variants={itemVariants} className="text-center py-20">
             <div className="max-w-md mx-auto space-y-6">
               <div className="w-24 h-24 bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-3xl flex items-center justify-center mx-auto">
@@ -414,8 +257,8 @@ const WeatherDashboard: React.FC = () => {
               </div>
 
               <motion.button
-                onClick={handleUseCurrentLocation}
-                disabled={geolocation.isPending}
+                onClick={getPosition}
+                disabled={geolocationLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-sky-500/25 hover:shadow-xl hover:shadow-sky-500/30 transition-all duration-300 disabled:opacity-50"

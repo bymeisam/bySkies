@@ -12,6 +12,11 @@
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.3.tgz#75c5034b55ba868121668be5d5bb31cc64e6e61a"
   integrity sha512-9uIQ10o0WGdpP6GDhXcdOJPJuDgFtIDtN/9+ArJQ2NAfAmiuhTQdzkaTGR33v43GYS2UrSA0eX2pPPHoFVvpxA==
 
+"@bymeisam/use@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@bymeisam/use/-/use-1.4.2.tgz#9b24ad59079ca7515c9a52b22a8cdca75e7c3944"
+  integrity sha512-tNfToe76AMw8g6GyHt6x1pMNqpM8cKg4JJgVMbNVxDe8cb7SWryULW81HORT9JdQwT4fj4OU7FRy95aBVeY9/A==
+
 "@emnapi/core@^1.4.3", "@emnapi/core@^1.4.5":
   version "1.4.5"
   resolved "https://registry.yarnpkg.com/@emnapi/core/-/core-1.4.5.tgz#bfbb0cbbbb9f96ec4e2c4fd917b7bbe5495ceccb"

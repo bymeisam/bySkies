@@ -34,6 +34,7 @@
     "react": "^19"
   },
   "devDependencies": {
+    "@bymeisam/use": "^1.4.2",
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
