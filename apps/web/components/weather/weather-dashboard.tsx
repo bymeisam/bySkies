@@ -3,19 +3,17 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { PremiumWeatherMap, LocationSelector, LocationOption } from "@repo/ui";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/query/query-client";
+import {
+  PremiumWeatherMap,
+  LocationSelector,
+  LocationOption,
+  FullPageLoader,
+} from "@repo/ui";
 import { useGeolocationWithCache } from "@/lib/hooks/useGeolocationWithCach";
-import { searchLocations } from "@/lib/api/weather";
+import { useSearchLocations } from "@/lib/hooks/use-search-locations";
 import AnimatedBackground from "./animated-background";
 import Header from "./header";
-type Location = {
-  lat: number;
-  lon: number;
-  name: string;
-  id: string;
-};
+
 const WeatherDashboard: React.FC = () => {
   const {
     loading: geolocationLoading,
@@ -23,73 +21,47 @@ const WeatherDashboard: React.FC = () => {
     location,
     getPosition,
   } = useGeolocationWithCache();
-  const queryClient = useQueryClient();
   const [currentLocation, setCurrentLocation] = useState<LocationOption>();
-  const [searchResults, setSearchResults] = useState<
-    Array<{
-      lat: number;
-      lon: number;
-      name: string;
-      country?: string;
-      state?: string;
-      id: string;
-    }>
-  >([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
-  // Handle location selection
-  const handleLocationSelect = (location: Location) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.weather.all });
-    queryClient.invalidateQueries({ queryKey: queryKeys.suggestions.all });
-    queryClient.invalidateQueries({
-      queryKey: ["weather", "extended-forecast"],
-    });
-    queryClient.refetchQueries({ queryKey: queryKeys.weather.all });
-    queryClient.refetchQueries({ queryKey: queryKeys.suggestions.all });
-    queryClient.refetchQueries({ queryKey: ["weather", "extended-forecast"] });
-    setCurrentLocation(location);
-    toast.success(`Weather updated for ${location.name}`);
-  };
+  // Search locations hook
+  const {
+    data: searchResults,
+    loading: isSearchLoading,
+    error: searchError,
+    search: searchLocations,
+  } = useSearchLocations();
 
   useEffect(() => {
     if (location)
       setCurrentLocation({
-        lat: location?.latitude || 0,
-        lon: location?.longitude || 0,
-        name: location?.name || "",
-        id: location ? `${location.latitude}-${location.longitude}` : "",
+        ...location,
+        id: location ? `${location.lat}-${location.lon}` : "",
       });
   }, [location]);
-  // Handle search query changes
-  const handleSearchQueryChange = useCallback(async (query: string) => {
-    if (!query.trim() || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
 
-    try {
-      setIsSearchLoading(true);
-      const results = await searchLocations(query, 5);
-      const mappedResults = results.map((loc) => ({
-        lat: loc.lat,
-        lon: loc.lon,
-        name: loc.name,
-        country: loc.country,
-        state: loc.state,
-        id: `${loc.lat}-${loc.lon}`,
-      }));
-      setSearchResults(mappedResults);
-    } catch (error) {
-      console.error("Location search failed:", error);
-      toast.error("Failed to search locations");
-      setSearchResults([]);
-    } finally {
-      setIsSearchLoading(false);
+  // Handle location selection
+  const handleLocationSelect = (location: LocationOption) => {
+    setCurrentLocation(location);
+    toast.success(`Weather updated for ${location.name}`);
+  };
+
+  // Handle search query changes
+  const handleSearchQueryChange = useCallback(
+    (query: string) => {
+      searchLocations(query);
+    },
+    [searchLocations],
+  );
+
+  // Show search errors as toasts
+  useEffect(() => {
+    if (searchError) {
+      toast.error(searchError);
     }
-  }, []);
+  }, [searchError]);
 
   if (geolocationLoading) {
-    return <div>Loading...</div>;
+    return <FullPageLoader message="Getting your location..." />;
   }
   if (geolocationError) {
     const error = geolocationError;
@@ -142,15 +114,15 @@ const WeatherDashboard: React.FC = () => {
         </motion.div>
 
         {/* Main Content */}
-        {location && (
+        {currentLocation && (
           <div className="space-y-8">
             {/* Additional Weather Info Cards */}
             <motion.div variants={itemVariants} className="space-y-8">
-              {/* Top Row: 5-Day Forecast and Weather Map */}
               <div className="grid gap-6 lg:grid-cols-2">
                 <PremiumWeatherMap
-                  center={[location.latitude, location.longitude]}
-                  isLoading={geolocationLoading}
+                  name={currentLocation.name}
+                  lat={currentLocation.lat}
+                  lon={currentLocation.lon}
                 />
               </div>
 

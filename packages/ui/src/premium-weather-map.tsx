@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Map as MapIcon,
@@ -19,44 +19,46 @@ import dynamic from "next/dynamic";
 // Fix Leaflet icons by configuring them when component mounts
 const configureLeafletIcons = () => {
   if (typeof window === "undefined") return;
-  
+
   const L = require("leaflet");
-  
+
   // Delete default icon options to prevent loading issues
   delete (L.Icon.Default.prototype as any)._getIconUrl;
 
   // Set custom icon configuration
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCAyNSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjUgMEMxOS4xMjggMCAyNC41IDUuMzcyIDI0LjUgMTJDMjQuNSAxOC42MjggMTkuMTI4IDI0IDEyLjUgMjRDNS44NzIgMjQgMC41IDE4LjYyOCAwLjUgMTJDMC41IDUuMzcyIDUuODcyIDAgMTIuNSAwWiIgZmlsbD0iIzM5ODhGRiIvPgo8cGF0aCBkPSJNMTIuNSA0MUwxMi41IDI0IiBzdHJva2U9IiMzOTg4RkYiIHN0cm9rZS13aWR0aD0iMSIvPgo8Y2lyY2xlIGN4PSIxMi41IiBjeT0iMTIiIHI9IjgiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
-    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCAyNSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjUgMEMxOS4xMjggMCAyNC41IDUuMzcyIDI0LjUgMTJDMjQuNSAxOC42MjggMTkuMTI4IDI0IDEyLjUgMjRDNS44NzIgMjQgMC41IDE4LjYyOCAwLjUgMTJDMC41IDUuMzcyIDUuODcyIDAgMTIuNSAwWiIgZmlsbD0iIzM5ODhGRiIvPgo8cGF0aCBkPSJNMTIuNSA0MUwxMi41IDI0IiBzdHJva2U9IiMzOTg4RkYiIHN0cm9rZS13aWR0aD0iMSIvPgo8Y2lyY2xlIGN4PSIxMi41IiBjeT0iMTIiIHI9IjgiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
-    shadowUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCA0MSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGVsbGlwc2UgY3g9IjIwLjUiIGN5PSIzNy41IiByeD0iMjAuNSIgcnk9IjMuNSIgZmlsbD0iYmxhY2siIGZpbGwtb3BhY2l0eT0iMC4zIi8+Cjwvc3ZnPgo=',
+    iconRetinaUrl:
+      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCAyNSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjUgMEMxOS4xMjggMCAyNC41IDUuMzcyIDI0LjUgMTJDMjQuNSAxOC42MjggMTkuMTI4IDI0IDEyLjUgMjRDNS44NzIgMjQgMC41IDE4LjYyOCAwLjUgMTJDMC41IDUuMzcyIDUuODcyIDAgMTIuNSAwWiIgZmlsbD0iIzM5ODhGRiIvPgo8cGF0aCBkPSJNMTIuNSA0MUwxMi41IDI0IiBzdHJva2U9IiMzOTg4RkYiIHN0cm9rZS13aWR0aD0iMSIvPgo8Y2lyY2xlIGN4PSIxMi41IiBjeT0iMTIiIHI9IjgiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=",
+    iconUrl:
+      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCAyNSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjUgMEMxOS4xMjggMCAyNC41IDUuMzcyIDI0LjUgMTJDMjQuNSAxOC42MjggMTkuMTI4IDI0IDEyLjUgMjRDNS44NzIgMjQgMC41IDE4LjYyOCAwLjUgMTJDMC41IDUuMzcyIDUuODcyIDAgMTIuNSAwWiIgZmlsbD0iIzM5ODhGRiIvPgo8cGF0aCBkPSJNMTIuNSA0MUwxMi41IDI0IiBzdHJva2U9IiMzOTg4RkYiIHN0cm9rZS13aWR0aD0iMSIvPgo8Y2lyY2xlIGN4PSIxMi41IiBjeT0iMTIiIHI9IjgiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=",
+    shadowUrl:
+      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iNDEiIHZpZXdCb3g9IjAgMCA0MSA0MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGVsbGlwc2UgY3g9IjIwLjUiIGN5PSIzNy41IiByeD0iMjAuNSIgcnk9IjMuNSIgZmlsbD0iYmxhY2siIGZpbGwtb3BhY2l0eT0iMC4zIi8+Cjwvc3ZnPgo=",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+    shadowSize: [41, 41],
   });
 };
 
 // Dynamic import of Leaflet components to avoid SSR issues
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
+  { ssr: false },
 );
 
 const TileLayer = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
+  { ssr: false },
 );
 
 const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
-  { ssr: false }
+  { ssr: false },
 );
 
-const Popup = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Popup),
-  { ssr: false }
-);
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
 
 // Weather map layers configuration
 const weatherLayers = {
@@ -101,11 +103,13 @@ const weatherLayers = {
 type WeatherLayer = keyof typeof weatherLayers;
 
 interface PremiumWeatherMapProps {
-  center?: [number, number];
+  lat?: number;
+  lon?: number;
   zoom?: number;
   className?: string;
   isLoading?: boolean;
   apiKey?: string;
+  name?: string;
 }
 
 const LoadingSkeleton = () => (
@@ -157,17 +161,20 @@ const LayerToggle: React.FC<{
   );
 };
 
-export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
-  center = [40.7128, -74.006], // Default to NYC
+const PremiumWeatherMapComponent: React.FC<PremiumWeatherMapProps> = ({
+  lat = 0,
+  lon: lng = 0,
   zoom = 8,
   className = "",
+  name = "",
   isLoading = false,
   apiKey = "55cd1a140017e2635e0fdbc9b920ae24", // Default API key from CLAUDE.md
 }) => {
   const [activeLayer, setActiveLayer] = useState<WeatherLayer>("precipitation");
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-
+  const mapRef = useRef<any>(null);
+  const center = useMemo(() => ({ lat, lng }), [lat, lng]);
   // Initialize map after component mounts (client-side only)
   useEffect(() => {
     console.log("🗺️ PremiumWeatherMap mounting...");
@@ -175,9 +182,16 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
     setMapReady(true);
   }, []);
 
+  // Update map view when coordinates change
   useEffect(() => {
-    console.log("🗺️ Map ready state:", mapReady, "Center:", center);
-  }, [mapReady, center]);
+    if (mapRef.current && lat && lng) {
+      const map = mapRef.current;
+      console.log("🗺️ Updating map view to:", { lat, lng });
+      map.setView([lat, lng], zoom);
+    }
+  }, [lat, lng, zoom]);
+
+  console.log({ mapReady, lat, lng });
 
   const toggleLayer = (layer: WeatherLayer) => {
     setActiveLayer(activeLayer === layer ? "precipitation" : layer);
@@ -190,9 +204,7 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
     return url;
   }, [activeLayer, apiKey]);
 
-  const baseTileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-  if (isLoading) {
+  if (isLoading || !lat || !lng) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -239,7 +251,7 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white">Weather Maps</h2>
               <p className="text-white/60 text-sm">
-                Live radar and conditions
+                Live radar and conditions for {name}
               </p>
             </div>
           </div>
@@ -311,6 +323,7 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
               style={{ height: "100%", width: "100%" }}
               zoomControl={true}
               attributionControl={true}
+              ref={mapRef}
             >
               {/* Base Map Layer */}
               <TileLayer
@@ -329,7 +342,9 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
               <Marker position={center}>
                 <Popup>
                   <div>
-                    <p><strong>Current Location</strong></p>
+                    <p>
+                      <strong>Current Location</strong>
+                    </p>
                     <p>Weather data centered here</p>
                   </div>
                 </Popup>
@@ -384,3 +399,5 @@ export const PremiumWeatherMap: React.FC<PremiumWeatherMapProps> = ({
     </motion.div>
   );
 };
+
+export const PremiumWeatherMap = React.memo(PremiumWeatherMapComponent);

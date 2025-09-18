@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useLocalStorage, useClickOutside, useDebounce } from "@bymeisam/use";
+import React, { useState } from "react";
+import { useLocalStorage, useClickOutside } from "@bymeisam/use";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Loader2, Navigation } from "lucide-react";
 import { LocationInput } from "./location-input";
@@ -36,8 +36,6 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [recentLocations, setRecentLocations] = useLocalStorage<
     LocationOption[]
   >("byskies-recent-locations", []);
@@ -45,7 +43,6 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     setIsOpen(false),
   );
 
-  console.log({ currentLocation });
   const saveToRecent = (location: LocationOption) => {
     setRecentLocations((prevLocations) =>
       [
@@ -54,22 +51,13 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       ].slice(0, 5),
     );
   };
-
-  // Notify parent when debounced search query changes
-  useEffect(() => {
-    onSearchQueryChange(debouncedSearchQuery);
-  }, [debouncedSearchQuery, onSearchQueryChange]);
-
-  const handleInputChange = (value: string) => {
-    setSearchQuery(value);
-  };
+  console.log({ currentLocation });
 
   // Handle location selection
   const handleLocationSelect = (location: LocationOption) => {
     saveToRecent(location);
     onLocationSelect(location);
     setIsOpen(false);
-    setSearchQuery("");
   };
 
   // Handle current location
@@ -162,8 +150,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             <div className="p-4 space-y-4 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
               {/* Search input */}
               <LocationInput
-                value={searchQuery}
-                onValueChange={handleInputChange}
+                onValueChange={onSearchQueryChange}
                 isShowing={isOpen}
               />
 
@@ -194,8 +181,6 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                 currentLocationId={currentLocation?.id}
                 onLocationSelect={handleLocationSelect}
                 isLoading={isSearchLoading}
-                showNoResults={searchQuery.length >= 2}
-                searchQuery={searchQuery}
               />
             </div>
           </motion.div>

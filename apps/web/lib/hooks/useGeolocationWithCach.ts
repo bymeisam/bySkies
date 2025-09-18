@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getLocationName } from "../api/weather/openweather/geocoding";
 import { queryKeys } from "../query/query-client";
+import { GeocodingResult } from "@repo/types";
 
 export type Position = {
   latitude: number;
@@ -34,30 +35,26 @@ export const useLocationName = (
 
 export const useGeolocationWithCache = () => {
   const [shouldSearch, setShouldSearch] = useState(false);
-  const [value, setValue] = useLocalStorage<Position | null>(
+  const [cachedValue, setCachedValue] = useLocalStorage<GeocodingResult | null>(
     "byskies-geolocatin",
     null,
   );
-  const {
-    loading,
-    error,
-    position: location,
-    getCurrentPosition,
-  } = useGeolocation();
+  const { loading, error, location, getCurrentPosition } = useGeolocation();
 
   const {
     data: locationData,
     isLoading: isLocationNameLoading,
     error: locationNameError,
   } = useLocationName(
-    value?.latitude,
-    value?.longitude,
-    !value?.name && shouldSearch,
+    location?.coords.latitude,
+    location?.coords.longitude,
+    shouldSearch && !!location,
   );
 
   const getPosition = () => {
     setShouldSearch(true);
-    setValue(null);
+    setCachedValue(null);
+    getCurrentPosition();
   };
 
   useEffect(() => {
@@ -69,39 +66,24 @@ export const useGeolocationWithCache = () => {
       !shouldSearch
     )
       return;
-    if (value?.latitude && value?.longitude) {
-      if (locationData) {
-        setValue({ ...value, name: locationData.name });
-        setShouldSearch(false);
-      }
-    } else {
-      if (!location) {
-        getCurrentPosition();
-      } else {
-        setValue({
-          ...value,
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-      }
+    if (locationData) {
+      setCachedValue({ ...locationData });
+      setShouldSearch(false);
     }
   }, [
     error,
-    getCurrentPosition,
     isLocationNameLoading,
     loading,
     locationData,
     locationNameError,
-    location,
-    setValue,
+    setCachedValue,
     shouldSearch,
-    value,
   ]);
 
   return {
     loading: loading || isLocationNameLoading,
     error: error || locationNameError?.message,
-    location: value,
+    location: cachedValue,
     getPosition,
   };
 };

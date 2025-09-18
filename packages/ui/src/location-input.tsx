@@ -3,7 +3,6 @@ import { useFocus } from "@bymeisam/use";
 import { Search, X } from "lucide-react";
 
 interface LocationInputProps {
-  value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
   className?: string;
@@ -11,15 +10,16 @@ interface LocationInputProps {
 }
 
 export const LocationInput: React.FC<LocationInputProps> = ({
-  value,
   onValueChange,
   placeholder = "Search for a city...",
   className = "",
   isShowing = false,
 }) => {
+  const [value, setValue] = React.useState("");
   const { ref: inputRef, focus } = useFocus<HTMLInputElement>();
 
   const inputHandler: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setValue(e.target.value);
     onValueChange(e.target.value);
   };
 
@@ -28,6 +28,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   }, [isShowing, focus]);
 
   const clearSearch = () => {
+    setValue("");
     onValueChange("");
   };
 
@@ -53,4 +54,3 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     </div>
   );
 };
-
