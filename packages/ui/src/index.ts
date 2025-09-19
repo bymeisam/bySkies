@@ -1,5 +1,5 @@
 export * from "./design-system";
-export * from "./premium-weather-card";
+export { default as PremiumWeatherCard } from "./PremiumWeatherCard";
 export * from "./premium-activity-card";
 export * from "./premium-forecast-card";
 export * from "./premium-weather-map";
