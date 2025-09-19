@@ -13,6 +13,7 @@ import { useSearchLocations } from "@/lib/hooks/use-search-locations";
 import AnimatedBackground from "./animated-background";
 import Header from "./header";
 import { WeatherCardsWrapper } from "./weather-cards-wrapper";
+import { styles, motionVariants } from "./weather-dashboard.styles";
 
 const WeatherDashboard: React.FC = () => {
   const {
@@ -67,41 +68,18 @@ const WeatherDashboard: React.FC = () => {
     const error = geolocationError;
     toast.error(error);
   }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-      },
-    },
-  };
   return (
     <motion.div
-      variants={containerVariants}
+      variants={motionVariants.container}
       initial="hidden"
       animate="visible"
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"
+      className={styles.container}
     >
       <AnimatedBackground />
       <Header />
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+      <div className={styles.contentContainer}>
         {/* Location Selector */}
-        <motion.div variants={itemVariants} className="max-w-md mx-auto mb-12">
+        <motion.div variants={motionVariants.item} className={styles.locationSelectorContainer}>
           <LocationSelector
             currentLocation={currentLocation}
             onLocationSelect={handleLocationSelect}
@@ -115,7 +93,7 @@ const WeatherDashboard: React.FC = () => {
 
         {/* Main Content */}
         {currentLocation && (
-          <div className="space-y-8">
+          <div className={styles.mainContentWrapper}>
             {/* Weather Data Cards */}
             <WeatherCardsWrapper
               lat={currentLocation.lat}
@@ -128,11 +106,11 @@ const WeatherDashboard: React.FC = () => {
 
         {/* Welcome state when no location is selected */}
         {!location && !geolocationLoading && (
-          <motion.div variants={itemVariants} className="text-center py-20">
-            <div className="max-w-md mx-auto space-y-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-sky-400/20 to-blue-600/20 rounded-3xl flex items-center justify-center mx-auto">
+          <motion.div variants={motionVariants.item} className={styles.welcomeContainer()}>
+            <div className={styles.welcomeContent}>
+              <div className={styles.welcomeIcon}>
                 <svg
-                  className="w-12 h-12 text-sky-300"
+                  className={styles.welcomeIconSvg}
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -140,11 +118,11 @@ const WeatherDashboard: React.FC = () => {
                 </svg>
               </div>
 
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-white">
+              <div className={styles.welcomeTextContainer}>
+                <h2 className={styles.welcomeHeading}>
                   Ready for sky guidance?
                 </h2>
-                <p className="text-white/70 leading-relaxed">
+                <p className={styles.welcomeDescription}>
                   Choose your location to get personalized weather insights and
                   intelligent activity suggestions.
                 </p>
@@ -153,9 +131,9 @@ const WeatherDashboard: React.FC = () => {
               <motion.button
                 onClick={getPosition}
                 disabled={geolocationLoading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-sky-500/25 hover:shadow-xl hover:shadow-sky-500/30 transition-all duration-300 disabled:opacity-50"
+                whileHover={motionVariants.button.hover}
+                whileTap={motionVariants.button.tap}
+                className={styles.getStartedButton({ disabled: geolocationLoading })}
               >
                 Get Started
               </motion.button>
@@ -165,8 +143,8 @@ const WeatherDashboard: React.FC = () => {
       </div>
 
       {/* Version indicator for development */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <div className="bg-black/20 backdrop-blur-sm text-white/60 text-xs px-2 py-1 rounded-md border border-white/10">
+      <div className={styles.versionIndicator}>
+        <div className={styles.versionBadge}>
           v1.0.29-agricultural
         </div>
       </div>

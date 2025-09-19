@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Loader2, Navigation } from "lucide-react";
 import { LocationInput } from "./location-input";
 import { LocationDropdown } from "./location-dropdown";
+import { styles, motionVariants } from "./location-selector.styles";
 
 export interface LocationOption {
   lat: number;
@@ -67,17 +68,13 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   };
 
   return (
-    <div ref={clickOutsideRef} className={`relative ${className}`}>
+    <div ref={clickOutsideRef} className={styles.container({ className })}>
       {/* Current location button */}
       <motion.button
         onClick={() => setIsOpen((prevIsOpen) => !prevIsOpen)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className={`w-full flex items-center gap-3 bg-white/10 backdrop-blur-xl border rounded-2xl p-4 text-white transition-all duration-300 group ${
-          isOpen
-            ? "border-sky-400/50 shadow-lg shadow-sky-500/20"
-            : "border-white/20 hover:border-white/30"
-        }`}
+        whileHover={motionVariants.button.whileHover}
+        whileTap={motionVariants.button.whileTap}
+        className={styles.selectorButton({ isOpen })}
         style={{
           boxShadow: `
             0 10px 25px -5px rgba(59, 130, 246, 0.1),

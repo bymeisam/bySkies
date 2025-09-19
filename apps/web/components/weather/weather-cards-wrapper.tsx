@@ -23,6 +23,7 @@ import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } f
 import type { SolarForecast, AgriculturalForecast } from "@/lib/api/weather/open-meteo/types";
 import type { EnhancedSuggestionResult } from "@/lib/suggestions";
 import { WeatherTabs } from "@/components/ui/weather-tabs";
+import { styles, motionVariants } from "./weather-cards-wrapper.styles";
 
 interface WeatherCardsWrapperProps {
   lat: number;
@@ -45,27 +46,15 @@ interface WeatherData {
 
 function WeatherCardsLoading() {
   return (
-    <div className="space-y-6">
+    <div className={styles.loadingContainer}>
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 animate-pulse">
-          <div className="h-32 bg-white/5 rounded-2xl"></div>
+        <div key={i} className={styles.loadingItem}>
+          <div className={styles.loadingContent}></div>
         </div>
       ))}
     </div>
   );
 }
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-};
 
 export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }: WeatherCardsWrapperProps) {
   const [weatherData, setWeatherData] = useState<WeatherData>({
@@ -152,18 +141,18 @@ export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }
 
   if (weatherData.error) {
     return (
-      <motion.div variants={itemVariants} className="text-center text-red-300 p-4 bg-red-900/20 rounded-lg">
-        <h3 className="font-bold mb-2">Error Loading Weather Data</h3>
-        <p className="text-sm">{weatherData.error}</p>
+      <motion.div variants={motionVariants.item} className={styles.errorContainer}>
+        <h3 className={styles.errorHeading}>Error Loading Weather Data</h3>
+        <p className={styles.errorMessage}>{weatherData.error}</p>
       </motion.div>
     );
   }
 
   if (!weatherData.currentWeather && !weatherData.forecast) {
     return (
-      <motion.div variants={itemVariants} className="text-center text-slate-300 p-4">
-        <h3 className="font-bold mb-2">No Weather Data</h3>
-        <p className="text-sm">Please check your location settings</p>
+      <motion.div variants={motionVariants.item} className={styles.emptyContainer}>
+        <h3 className={styles.emptyHeading}>No Weather Data</h3>
+        <p className={styles.emptyMessage}>Please check your location settings</p>
       </motion.div>
     );
   }
@@ -184,7 +173,7 @@ export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }
           error={null}
         />
       ) : (
-        <div className="text-center text-slate-300 p-8">
+        <div className={styles.tabEmptyState}>
           <p>Current weather data not available</p>
         </div>
       )
@@ -203,7 +192,7 @@ export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }
           }}
         />
       ) : (
-        <div className="text-center text-slate-300 p-8">
+        <div className={styles.tabEmptyState}>
           <p>Forecast data not available</p>
         </div>
       )
@@ -263,7 +252,7 @@ export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }
   ];
 
   return (
-    <motion.div variants={itemVariants}>
+    <motion.div variants={motionVariants.item}>
       <WeatherTabs tabs={tabs} defaultTab="current" />
     </motion.div>
   );

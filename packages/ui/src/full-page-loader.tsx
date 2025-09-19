@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { styles, motionVariants } from "./full-page-loader.styles";
 
 interface FullPageLoaderProps {
   message?: string;
@@ -13,31 +14,31 @@ export const FullPageLoader: React.FC<FullPageLoaderProps> = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 ${className}`}
+      initial={motionVariants.container.initial}
+      animate={motionVariants.container.animate}
+      exit={motionVariants.container.exit}
+      className={styles.container({ className })}
     >
-      <div className="text-center">
+      <div className={styles.content}>
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="mb-4 flex justify-center"
+          animate={motionVariants.loader.animate}
+          transition={motionVariants.loader.transition}
+          className={styles.loaderContainer}
         >
-          <Loader2 className="w-12 h-12 text-sky-400" />
+          <Loader2 className={styles.loaderIcon} />
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-white"
+          initial={motionVariants.text.initial}
+          animate={motionVariants.text.animate}
+          transition={motionVariants.text.transition}
+          className={styles.textContainer}
         >
-          <h2 className="text-xl font-semibold mb-2">{message}</h2>
+          <h2 className={styles.message}>{message}</h2>
           <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="text-white/60 text-sm"
+            animate={motionVariants.pulse.animate}
+            transition={motionVariants.pulse.transition}
+            className={styles.subMessage}
           >
             Please wait...
           </motion.div>

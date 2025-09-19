@@ -12,6 +12,7 @@ import {
 import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
 import type { SolarForecast, AgriculturalForecast } from "@/lib/api/weather/open-meteo/types";
 import type { EnhancedSuggestionResult } from "@/lib/suggestions";
+import { styles, motionVariants } from "./server-weather-dashboard.styles";
 
 interface ServerWeatherDashboardProps {
   currentWeather: CurrentWeatherResponse | null;
@@ -34,34 +35,12 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
   smartSuggestions,
   error
 }) => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-      },
-    },
-  };
-
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Error Loading Forecast</h2>
-          <p className="text-red-300">{error}</p>
+      <div className={styles.centerContainer}>
+        <div className={styles.centerContent}>
+          <h2 className={styles.centerHeading}>Error Loading Forecast</h2>
+          <p className={styles.errorMessage}>{error}</p>
         </div>
       </div>
     );
@@ -69,10 +48,10 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
 
   if (!currentWeather && !forecast) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">No Weather Data</h2>
-          <p className="text-slate-300">Please check your location settings</p>
+      <div className={styles.centerContainer}>
+        <div className={styles.centerContent}>
+          <h2 className={styles.centerHeading}>No Weather Data</h2>
+          <p className={styles.emptyMessage}>Please check your location settings</p>
         </div>
       </div>
     );
@@ -80,43 +59,35 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={motionVariants.container}
       initial="hidden"
       animate="visible"
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"
+      className={styles.container}
     >
       {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className={styles.backgroundContainer}>
         <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.1, 0.2, 0.1],
-            rotate: [0, 90, 180, 270, 360],
-          }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-600/10 rounded-full blur-3xl"
+          animate={motionVariants.backgroundOrb.animate}
+          transition={motionVariants.backgroundOrb.transition}
+          className={styles.backgroundOrb}
         />
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        <motion.div variants={itemVariants} className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+      <div className={styles.contentContainer}>
+        <motion.div variants={motionVariants.item} className={styles.headerSection}>
+          <h1 className={styles.title}>
             Weather Dashboard
           </h1>
-          <p className="text-slate-300">
+          <p className={styles.subtitle}>
             Server-side rendered weather data for {currentWeather?.name || forecast?.city.name || 'Unknown Location'}
           </p>
         </motion.div>
 
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className={styles.cardsContainer}>
           {/* Current Weather Card */}
           {currentWeather && (
-            <motion.div variants={itemVariants}>
+            <motion.div variants={motionVariants.item}>
               <PremiumWeatherCard
                 weather={currentWeather}
                 airQuality={airQuality || undefined}
@@ -129,7 +100,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
 
           {/* Forecast Card */}
           {forecast && (
-            <motion.div variants={itemVariants}>
+            <motion.div variants={motionVariants.item}>
               <PremiumForecastCard
                 forecast={forecast}
                 extendedForecast={extendedForecast}
@@ -143,7 +114,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
           )}
 
           {/* Premium Activity Suggestions Card */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={motionVariants.item}>
             <PremiumActivityCard
               suggestions={smartSuggestions?.suggestions || []}
               isLoading={false}
@@ -153,7 +124,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
           </motion.div>
 
           {/* Solar & UV Intelligence Card */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={motionVariants.item}>
             <SolarUVCard
               solarForecast={solarForecast || null}
               isLoading={false}
@@ -161,7 +132,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
           </motion.div>
 
           {/* Smart Agricultural Activities Card */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={motionVariants.item}>
             <SmartActivityCard
               suggestions={smartSuggestions?.smart_suggestions || []}
               isLoading={false}
