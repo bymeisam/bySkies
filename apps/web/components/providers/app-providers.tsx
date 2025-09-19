@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from 'react-error-boundary';
 import { queryClient } from '@/lib/query/query-client';
 import { styles, toastStyles, toastIconThemes } from './app-providers.styles';
+import { Svg } from '@repo/ui';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -19,9 +20,7 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
       <div className={styles.errorWrapper}>
         <div className={styles.errorCard}>
           <div className={styles.errorIconContainer}>
-            <svg className={styles.errorIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.084 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+            <Svg name="warning" className={styles.errorIcon} />
           </div>
 
           <h2 className={styles.errorHeading}>

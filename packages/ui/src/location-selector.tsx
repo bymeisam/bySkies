@@ -5,6 +5,7 @@ import { MapPin, Loader2, Navigation } from "lucide-react";
 import { LocationInput } from "./location-input";
 import { LocationDropdown } from "./location-dropdown";
 import { styles, motionVariants } from "./location-selector.styles";
+import { Svg } from "./svg";
 
 export interface LocationOption {
   lat: number;
@@ -111,19 +112,10 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="flex-shrink-0"
         >
-          <svg
+          <Svg
+            name="chevron-down"
             className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+          />
         </motion.div>
       </motion.button>
 

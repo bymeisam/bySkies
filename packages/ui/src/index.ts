@@ -9,3 +9,4 @@ export * from "./location-dropdown";
 export * from "./full-page-loader";
 export * from "./solar-uv-card";
 export * from "./smart-activity-card";
+export * from "./svg";
