@@ -38,6 +38,7 @@
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/cli": "^4.1.5",
     "@types/react": "^19.1.0",
     "eslint": "^9.33.0",
