@@ -27,42 +27,42 @@ export const styles = {
     };
 
     const variantStyles = {
-      blue: "bg-gradient-to-r from-blue-400/10 to-indigo-600/10",
-      purple: "bg-gradient-to-r from-purple-400/10 to-pink-600/10"
+      blue: "bg-gradient-to-r from-blue-400/20 to-indigo-600/20",
+      purple: "bg-gradient-to-r from-purple-400/20 to-pink-600/20"
     };
 
     return `${base} ${sizeStyles[size]} ${positionStyles[position]} ${variantStyles[variant]}`.trim();
   },
 
   // Floating particles
-  particle: "absolute w-2 h-2 bg-white/20 rounded-full blur-sm",
+  particle: "absolute w-3 h-3 bg-white/40 rounded-full blur-sm",
 };
 
 // Motion variants for animations
 export const motionVariants = {
   primaryOrb: {
     animate: {
-      scale: [1, 1.1, 1],
-      opacity: [0.1, 0.2, 0.1],
-      rotate: [0, 90, 180, 270, 360],
+      scale: [1, 1.2, 1],
+      opacity: [0.3, 0.6, 0.3],
+      rotate: [0, 180, 360],
     },
     transition: {
-      duration: 60,
+      duration: 20,
       repeat: Infinity,
-      ease: "linear",
+      ease: "easeInOut",
     },
   },
 
   secondaryOrb: {
     animate: {
-      scale: [1.2, 1, 1.2],
-      opacity: [0.05, 0.15, 0.05],
-      rotate: [360, 270, 180, 90, 0],
+      scale: [1.1, 0.9, 1.1],
+      opacity: [0.2, 0.5, 0.2],
+      rotate: [360, 180, 0],
     },
     transition: {
-      duration: 40,
+      duration: 15,
       repeat: Infinity,
-      ease: "linear",
+      ease: "easeInOut",
     },
   },
 
@@ -70,7 +70,7 @@ export const motionVariants = {
     animate: {
       y: [-20, 20, -20],
       x: [-10, 10, -10],
-      opacity: [0.1, 0.3, 0.1],
+      opacity: [0.2, 0.6, 0.2],
     },
     transition: {
       duration: 8 + index * 2,
