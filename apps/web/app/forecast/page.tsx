@@ -32,9 +32,10 @@ export default async function ForecastPage({ searchParams }: ForecastPageProps) 
   // Validate coordinates
   if (isNaN(lat) || isNaN(lon)) {
     return (
-      <ServerWeatherDashboard 
-        forecast={null} 
-        error="Invalid coordinates provided. Please provide valid lat and lon parameters." 
+      <ServerWeatherDashboard
+        currentWeather={null}
+        forecast={null}
+        error="Invalid coordinates provided. Please provide valid lat and lon parameters."
       />
     );
   }

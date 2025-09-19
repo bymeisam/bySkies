@@ -4,9 +4,10 @@ import type { PlanningDisruptionAlert, AirQualityAlert } from "@repo/types";
 // Types
 export interface PremiumWeatherCardProps {
   weather: CurrentWeatherResponse;
-  airQuality: AirPollutionResponse;
+  airQuality?: AirPollutionResponse;
   alerts?: (PlanningDisruptionAlert | AirQualityAlert)[];
   isLoading?: boolean;
+  error?: string | null;
   className?: string;
   locationName?: string;
 }

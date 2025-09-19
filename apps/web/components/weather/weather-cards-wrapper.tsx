@@ -21,6 +21,7 @@ import {
 import type { ForecastResponse, CurrentWeatherResponse, AirPollutionResponse } from "@repo/types";
 import type { SolarForecast, AgriculturalForecast } from "@/lib/api/weather/open-meteo/types";
 import type { EnhancedSuggestionResult } from "@/lib/suggestions";
+import { WeatherTabs } from "@/components/ui/weather-tabs";
 
 interface WeatherCardsWrapperProps {
   lat: number;
@@ -121,13 +122,13 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
         }
 
         setWeatherData({
-          currentWeather: currentWeatherResult.success ? currentWeatherResult.data : null,
-          forecast: forecastResult.success ? forecastResult.data : null,
-          extendedForecast: extendedForecastResult.success ? extendedForecastResult.data : null,
-          airQuality: airQualityResult.success ? airQualityResult.data : null,
-          solarForecast: solarForecastResult.success ? solarForecastResult.data : null,
-          agriculturalForecast: agriculturalForecastResult.success ? agriculturalForecastResult.data : null,
-          smartSuggestions: smartSuggestionsResult.success ? smartSuggestionsResult.data : null,
+          currentWeather: currentWeatherResult.success ? (currentWeatherResult.data || null) : null,
+          forecast: forecastResult.success ? (forecastResult.data || null) : null,
+          extendedForecast: extendedForecastResult.success ? (extendedForecastResult.data || null) : null,
+          airQuality: airQualityResult.success ? (airQualityResult.data || null) : null,
+          solarForecast: solarForecastResult.success ? (solarForecastResult.data || null) : null,
+          agriculturalForecast: agriculturalForecastResult.success ? (agriculturalForecastResult.data || null) : null,
+          smartSuggestions: smartSuggestionsResult.success ? (smartSuggestionsResult.data || null) : null,
           error: errors.length > 0 ? errors.join(', ') : null,
           loading: false,
         });
@@ -165,21 +166,32 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
     );
   }
 
-  return (
-    <motion.div variants={itemVariants} className="space-y-6">
-      {/* Current Weather Card */}
-      {weatherData.currentWeather && (
+  const locationName = weatherData.currentWeather?.name || weatherData.forecast?.city.name || 'Unknown Location';
+
+  const tabs = [
+    {
+      id: 'current',
+      label: 'Current Weather',
+      icon: '🌤️',
+      content: weatherData.currentWeather ? (
         <PremiumWeatherCard
           weather={weatherData.currentWeather}
-          airQuality={weatherData.airQuality}
+          airQuality={weatherData.airQuality || undefined}
           alerts={[]}
           isLoading={false}
           error={null}
         />
-      )}
-
-      {/* Forecast Card */}
-      {weatherData.forecast && (
+      ) : (
+        <div className="text-center text-slate-300 p-8">
+          <p>Current weather data not available</p>
+        </div>
+      )
+    },
+    {
+      id: 'forecast',
+      label: 'Forecast',
+      icon: '📊',
+      content: weatherData.forecast ? (
         <PremiumForecastCard
           forecast={weatherData.forecast}
           extendedForecast={weatherData.extendedForecast}
@@ -188,32 +200,57 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
             console.log(`Extended forecast ${enabled ? 'enabled' : 'disabled'}`);
           }}
         />
-      )}
+      ) : (
+        <div className="text-center text-slate-300 p-8">
+          <p>Forecast data not available</p>
+        </div>
+      )
+    },
+    {
+      id: 'activities',
+      label: 'Activities',
+      icon: '🎯',
+      content: (
+        <PremiumActivityCard
+          suggestions={weatherData.smartSuggestions?.suggestions || []}
+          isLoading={false}
+          locationName={locationName}
+          timezone={weatherData.currentWeather?.timezone}
+        />
+      )
+    },
+    {
+      id: 'solar',
+      label: 'Solar & UV',
+      icon: '☀️',
+      content: (
+        <SolarUVCard
+          solarForecast={weatherData.solarForecast || null}
+          isLoading={false}
+        />
+      )
+    },
+    {
+      id: 'agriculture',
+      label: 'Agriculture',
+      icon: '🌱',
+      content: (
+        <SmartActivityCard
+          suggestions={weatherData.smartSuggestions?.smart_suggestions || []}
+          isLoading={false}
+          locationName={locationName}
+          timezone={weatherData.currentWeather?.timezone}
+          optimalGardeningDays={
+            weatherData.agriculturalForecast?.weekly_summary?.best_gardening_days?.length || 0
+          }
+        />
+      )
+    }
+  ];
 
-      {/* Premium Activity Suggestions Card */}
-      <PremiumActivityCard
-        suggestions={weatherData.smartSuggestions?.suggestions || []}
-        isLoading={false}
-        locationName={weatherData.currentWeather?.name || weatherData.forecast?.city.name || 'Unknown Location'}
-        timezone={weatherData.currentWeather?.timezone}
-      />
-
-      {/* Solar & UV Intelligence Card */}
-      <SolarUVCard
-        solarForecast={weatherData.solarForecast || null}
-        isLoading={false}
-      />
-
-      {/* Smart Agricultural Activities Card */}
-      <SmartActivityCard
-        suggestions={weatherData.smartSuggestions?.smart_suggestions || []}
-        isLoading={false}
-        locationName={weatherData.currentWeather?.name || weatherData.forecast?.city.name || 'Unknown Location'}
-        timezone={weatherData.currentWeather?.timezone}
-        optimalGardeningDays={
-          weatherData.agriculturalForecast?.weekly_summary?.best_gardening_days?.length || 0
-        }
-      />
+  return (
+    <motion.div variants={itemVariants}>
+      <WeatherTabs tabs={tabs} defaultTab="current" />
     </motion.div>
   );
 }

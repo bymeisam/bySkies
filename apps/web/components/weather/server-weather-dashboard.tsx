@@ -119,7 +119,7 @@ const ServerWeatherDashboard: React.FC<ServerWeatherDashboardProps> = ({
             <motion.div variants={itemVariants}>
               <PremiumWeatherCard
                 weather={currentWeather}
-                airQuality={airQuality}
+                airQuality={airQuality || undefined}
                 alerts={[]}
                 isLoading={false}
                 error={null}

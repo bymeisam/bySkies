@@ -6,7 +6,7 @@ import { calculateLocalTime } from "../utils/time";
 // Custom hook for weather card calculations and logic
 export const usePremiumWeatherCard = (
   weather: CurrentWeatherResponse,
-  airQuality: AirPollutionResponse
+  airQuality?: AirPollutionResponse
 ) => {
   // Memoized calculations to avoid recalculating on every render
   const calculations = useMemo(() => {
