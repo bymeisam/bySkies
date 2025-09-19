@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -7,6 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ["@repo/ui"],
   experimental: {
     turbo: {
       rules: {
@@ -17,30 +19,43 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  webpack(config) {
-    // Only apply webpack config when not using turbopack
-    if (process.env.NODE_ENV === 'production') {
-      const fileLoaderRule = config.module.rules.find((rule: any) =>
-        rule.test?.test?.(".svg")
-      );
-
-      config.module.rules.push(
+  webpack(config, { isServer }) {
+    // SVGR configuration for UI package SVGs
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      include: [
+        path.resolve(__dirname, "../../packages/ui/src"),
+        path.resolve(__dirname, "./components"),
+      ],
+      use: [
         {
-          ...fileLoaderRule,
-          test: /\.svg$/i,
-          resourceQuery: /url/,
+          loader: "@svgr/webpack",
+          options: {
+            typescript: true,
+            svgoConfig: {
+              plugins: [
+                {
+                  name: "preset-default",
+                  params: {
+                    overrides: {
+                      removeViewBox: false,
+                    },
+                  },
+                },
+              ],
+            },
+          },
         },
+      ],
+    });
 
-        {
-          test: /\.svg$/i,
-          issuer: fileLoaderRule.issuer,
-          resourceQuery: { not: [...fileLoaderRule.resourceQuery.not, /url/] },
-          use: ["@svgr/webpack"],
-        }
-      );
-
-      fileLoaderRule.exclude = /\.svg$/i;
-    }
+    // Handle other SVG imports (for static assets)
+    config.module.rules.push({
+      test: /\.svg$/i,
+      type: "asset/inline",
+      issuer: (file: string) => !file.includes("packages/ui/src") && !file.includes("components"),
+    });
 
     return config;
   },

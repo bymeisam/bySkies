@@ -22,22 +22,19 @@ export const Svg: React.FC<SvgProps> = ({
   stroke = 'currentColor',
   strokeWidth = 2,
 }) => {
-  const svgContent = svgPaths[name];
+  const SvgComponent = svgPaths[name];
 
-  if (!svgContent) {
+  if (!SvgComponent) {
     console.warn(`SVG icon "${name}" not found`);
     return null;
   }
 
   return (
-    <svg
+    <SvgComponent
       className={styles.svg({ size, className })}
       fill={fill}
-      viewBox="0 0 24 24"
       stroke={stroke}
       strokeWidth={strokeWidth}
-    >
-      {svgContent}
-    </svg>
+    />
   );
 };
