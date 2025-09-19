@@ -113,7 +113,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           className="flex-shrink-0"
         >
           <Svg
-            name="chevron-down"
+            name="chevronDown"
             className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors"
           />
         </motion.div>

@@ -21,9 +21,8 @@ export const svgPaths = {
   thunderstorm: ThunderstormIcon,
   mist: MistIcon,
   warning: WarningIcon,
-  "chevron-down": ChevronDownIcon,
+  chevronDown: ChevronDownIcon,
   star: StarIcon,
-  "map-pin": MapPinIcon,
+  mapPin: MapPinIcon,
   loader: LoaderIcon,
 } as const;
-
