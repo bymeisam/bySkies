@@ -13,6 +13,7 @@ import { useGeolocationWithCache } from "@/lib/hooks/useGeolocationWithCach";
 import { useSearchLocations } from "@/lib/hooks/use-search-locations";
 import AnimatedBackground from "./animated-background";
 import Header from "./header";
+import { WeatherCardsWrapper } from "./weather-cards-wrapper";
 
 const WeatherDashboard: React.FC = () => {
   const {
@@ -116,6 +117,13 @@ const WeatherDashboard: React.FC = () => {
         {/* Main Content */}
         {currentLocation && (
           <div className="space-y-8">
+            {/* Weather Data Cards */}
+            <WeatherCardsWrapper
+              lat={currentLocation.lat}
+              lon={currentLocation.lon}
+              units="metric"
+            />
+
             {/* Additional Weather Info Cards */}
             <motion.div variants={itemVariants} className="space-y-8">
               <div className="grid gap-6 lg:grid-cols-2">
@@ -124,45 +132,6 @@ const WeatherDashboard: React.FC = () => {
                   lat={currentLocation.lat}
                   lon={currentLocation.lon}
                 />
-              </div>
-
-              {/* Bottom Row: Future features */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* Smart Alerts placeholder */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <span className="text-amber-300 text-xl">⏰</span>
-                    </div>
-                    <h3 className="text-white font-semibold mb-2">
-                      Smart Alerts
-                    </h3>
-                    <p className="text-white/60 text-sm">Coming soon</p>
-                  </div>
-                </div>
-
-                {/* Additional placeholders for future features */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-400/20 to-indigo-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <span className="text-indigo-300 text-xl">📈</span>
-                    </div>
-                    <h3 className="text-white font-semibold mb-2">Analytics</h3>
-                    <p className="text-white/60 text-sm">Coming soon</p>
-                  </div>
-                </div>
-
-                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 opacity-50">
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 bg-gradient-to-br from-pink-400/20 to-pink-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <span className="text-pink-300 text-xl">📱</span>
-                    </div>
-                    <h3 className="text-white font-semibold mb-2">
-                      Mobile App
-                    </h3>
-                    <p className="text-white/60 text-sm">Coming soon</p>
-                  </div>
-                </div>
               </div>
             </motion.div>
           </div>
