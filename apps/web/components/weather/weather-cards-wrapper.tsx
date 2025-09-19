@@ -8,6 +8,7 @@ import {
   PremiumActivityCard,
   SolarUVCard,
   SmartActivityCard,
+  PremiumWeatherMap,
 } from "@repo/ui";
 import {
   getForecastAction,
@@ -26,6 +27,7 @@ import { WeatherTabs } from "@/components/ui/weather-tabs";
 interface WeatherCardsWrapperProps {
   lat: number;
   lon: number;
+  locationName?: string;
   units?: 'metric' | 'imperial' | 'kelvin';
 }
 
@@ -65,7 +67,7 @@ const itemVariants = {
   },
 };
 
-export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCardsWrapperProps) {
+export function WeatherCardsWrapper({ lat, lon, locationName, units = 'metric' }: WeatherCardsWrapperProps) {
   const [weatherData, setWeatherData] = useState<WeatherData>({
     currentWeather: null,
     forecast: null,
@@ -166,7 +168,7 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
     );
   }
 
-  const locationName = weatherData.currentWeather?.name || weatherData.forecast?.city.name || 'Unknown Location';
+  const displayLocationName = locationName || weatherData.currentWeather?.name || weatherData.forecast?.city.name || 'Unknown Location';
 
   const tabs = [
     {
@@ -207,6 +209,18 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
       )
     },
     {
+      id: 'map',
+      label: 'Weather Map',
+      icon: '🗺️',
+      content: (
+        <PremiumWeatherMap
+          name={displayLocationName}
+          lat={lat}
+          lon={lon}
+        />
+      )
+    },
+    {
       id: 'activities',
       label: 'Activities',
       icon: '🎯',
@@ -214,7 +228,7 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
         <PremiumActivityCard
           suggestions={weatherData.smartSuggestions?.suggestions || []}
           isLoading={false}
-          locationName={locationName}
+          locationName={displayLocationName}
           timezone={weatherData.currentWeather?.timezone}
         />
       )
@@ -238,7 +252,7 @@ export function WeatherCardsWrapper({ lat, lon, units = 'metric' }: WeatherCards
         <SmartActivityCard
           suggestions={weatherData.smartSuggestions?.smart_suggestions || []}
           isLoading={false}
-          locationName={locationName}
+          locationName={displayLocationName}
           timezone={weatherData.currentWeather?.timezone}
           optimalGardeningDays={
             weatherData.agriculturalForecast?.weekly_summary?.best_gardening_days?.length || 0

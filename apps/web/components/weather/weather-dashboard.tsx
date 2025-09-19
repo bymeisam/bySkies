@@ -4,7 +4,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
-  PremiumWeatherMap,
   LocationSelector,
   LocationOption,
   FullPageLoader,
@@ -121,19 +120,9 @@ const WeatherDashboard: React.FC = () => {
             <WeatherCardsWrapper
               lat={currentLocation.lat}
               lon={currentLocation.lon}
+              locationName={currentLocation.name}
               units="metric"
             />
-
-            {/* Additional Weather Info Cards */}
-            <motion.div variants={itemVariants} className="space-y-8">
-              <div className="grid gap-6 lg:grid-cols-2">
-                <PremiumWeatherMap
-                  name={currentLocation.name}
-                  lat={currentLocation.lat}
-                  lon={currentLocation.lon}
-                />
-              </div>
-            </motion.div>
           </div>
         )}
 
