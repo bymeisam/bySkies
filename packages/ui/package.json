@@ -5,29 +5,16 @@
     "**/*.css"
   ],
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "exports": {
-    ".": {
-      "development": "./src/index.ts",
-      "default": "./dist/index.js"
-    },
-    "./styles.css": "./dist/index.css",
-    "./*": {
-      "development": "./src/*.ts",
-      "default": "./dist/*.js"
-    }
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css",
+    "./*": "./src/*.ts"
   },
   "license": "MIT",
   "scripts": {
-    "build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
-    "build:components": "tsc",
-    "build": "npm run build:styles && npm run build:components",
     "check-types": "tsc --noEmit",
-    "dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
-    "dev:components": "tsc --watch",
-    "dev": "npm run build:styles && (npm run dev:styles & npm run dev:components & wait)",
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {
@@ -38,11 +25,11 @@
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
+    "@svgr/core": "^8.1.0",
+    "@svgr/plugin-jsx": "^8.1.0",
     "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/cli": "^4.1.5",
     "@types/react": "^19.1.0",
     "eslint": "^9.33.0",
-    "tailwindcss": "^4.1.5",
     "typescript": "5.9.2"
   }
 }

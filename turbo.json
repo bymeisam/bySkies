@@ -3,26 +3,17 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "cache": false,
       "env": ["OPENWEATHER_API_KEY", "NODE_ENV"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
+    "lint": {},
+    "check-types": {},
     "dev": {
       "cache": false,
       "persistent": true,
       "env": ["OPENWEATHER_API_KEY", "NODE_ENV"]
-    },
-    "build:styles": {
-      "outputs": ["dist/**/*.css"],
-      "cache": true
     }
   }
 }

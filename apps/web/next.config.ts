@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ["@repo/ui"],
+  transpilePackages: ["@repo/ui", "@repo/types"],
   experimental: {
     turbo: {
       rules: {
@@ -20,13 +20,16 @@ const nextConfig: NextConfig = {
     },
   },
   webpack(config, { isServer }) {
-    // SVGR configuration for UI package SVGs
+    // SVGR configuration for UI package SVGs (source only, not dist)
     config.module.rules.push({
       test: /\.svg$/i,
       issuer: /\.[jt]sx?$/,
       include: [
         path.resolve(__dirname, "../../packages/ui/src"),
         path.resolve(__dirname, "./components"),
+      ],
+      exclude: [
+        path.resolve(__dirname, "../../packages/ui/dist"),
       ],
       use: [
         {
@@ -50,11 +53,11 @@ const nextConfig: NextConfig = {
       ],
     });
 
-    // Handle other SVG imports (for static assets)
+    // Handle other SVG imports (for static assets), excluding UI package src and dist
     config.module.rules.push({
       test: /\.svg$/i,
-      type: "asset/inline",
-      issuer: (file: string) => !file.includes("packages/ui/src") && !file.includes("components"),
+      type: "asset/resource",
+      issuer: (file: string) => !file.includes("packages/ui"),
     });
 
     return config;
