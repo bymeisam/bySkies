@@ -1,8 +1,12 @@
 export * from "./design-system";
-export * from "./premium-weather-card";
+export { default as PremiumWeatherCard } from "./PremiumWeatherCard";
 export * from "./premium-activity-card";
 export * from "./premium-forecast-card";
 export * from "./premium-weather-map";
 export * from "./location-selector";
+export * from "./location-input";
+export * from "./location-dropdown";
+export * from "./full-page-loader";
 export * from "./solar-uv-card";
 export * from "./smart-activity-card";
+export * from "./svg";
